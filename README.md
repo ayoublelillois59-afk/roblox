@@ -63,15 +63,38 @@ Un jeu de type Mine Simulator complet et professionnel pour Roblox avec des visu
 - **Interface** : Barres de progression stylisées pour le minage
 - **Économie** : Système de vente et boutique de pioches
 
+### 📋 Système de Quêtes
+
+- **5 quêtes quotidiennes** :
+  - 🪨 Mineur Débutant (50 Pierre - 500💰)
+  - ⚫ Charbonnier (30 Charbon - 800💰)
+  - 💰 Entrepreneur (5000$ gagné - 1500💰)
+  - ⚪ Forgeron (20 Fer - 1200💰)
+  - 💎 **MAÎTRE MINEUR** (10 Diamants + 5 Émeraudes + 3 Rubis - 25000💰)
+- **Tracking automatique** : Progression en temps réel
+- **Notifications** : Alertes visuelles lors des complétions
+- **Interface dédiée** : Menu de quêtes avec barres de progression
+
+### 🎨 Interface Utilisateur Complète
+
+- **HUD Monnaie** : Affichage en temps réel avec animations
+- **Inventaire de pioches** : 5 slots avec sélection rapide
+- **Boutique intégrée** : Achat direct des pioches
+- **Bouton de vente** : Vente rapide avec notification de gains
+- **Menu des quêtes** : Liste scrollable avec progression détaillée
+- **Animations fluides** : Transitions, bounces, slides
+- **Design moderne** : Couleurs vives, bordures néon, effets de survol
+
 ## 📁 Structure du Projet
 
 ```
 roblox/
 ├── src/
 │   ├── server/
-│   │   └── MiningSimulator.lua    # Script serveur principal
+│   │   ├── MiningSimulator.lua    # Script serveur principal
+│   │   └── QuestSystem.lua         # Système de quêtes
 │   ├── client/
-│   │   └── (scripts client à venir)
+│   │   └── MineClient.lua          # Interface GUI complète
 │   └── shared/
 │       └── (modules partagés à venir)
 └── README.md
@@ -79,11 +102,21 @@ roblox/
 
 ## 🔧 Installation dans Roblox Studio
 
-1. Créer un nouveau projet dans Roblox Studio
-2. Dans **ServerScriptService**, créer un nouveau Script
-3. Copier le contenu de `src/server/MiningSimulator.lua`
-4. Dans **ReplicatedStorage**, créer un dossier nommé `PickaxeModels`
-5. Ajouter les modèles de pioches (Tools) dans ce dossier avec les noms exacts :
+### Scripts Serveur
+
+1. Dans **ServerScriptService**, créer deux Scripts :
+   - **Script 1** : Copier le contenu de `src/server/MiningSimulator.lua`
+   - **Script 2** : Copier le contenu de `src/server/QuestSystem.lua`
+
+### Script Client
+
+2. Dans **StarterPlayer** > **StarterPlayerScripts**, créer un LocalScript :
+   - Copier le contenu de `src/client/MineClient.lua`
+
+### Assets
+
+3. Dans **ReplicatedStorage**, créer un dossier nommé `PickaxeModels`
+4. Ajouter les modèles de pioches (Tools) dans ce dossier avec les noms exacts :
    - WoodenPickaxe
    - StonePickaxe
    - IronPickaxe
@@ -95,14 +128,26 @@ roblox/
 
 ## 🎯 Prochaines Étapes
 
-- [ ] Scripts client pour l'interface utilisateur
-- [ ] GUI de boutique
-- [ ] GUI d'inventaire
-- [ ] Système de sauvegarde de données
-- [ ] Effets sonores
+### Complété ✅
+- [x] Scripts client pour l'interface utilisateur
+- [x] GUI de boutique
+- [x] GUI d'inventaire
+- [x] Système de quêtes quotidiennes
+- [x] Animations et effets visuels
+
+### En cours 🔄
+- [ ] Correction génération de chunks (problème de lag)
+- [ ] Optimisation des couleurs (plus vives et distinctives)
+- [ ] Amélioration de l'attractivité de la map
+
+### À venir 🚀
+- [ ] Système de sauvegarde de données (DataStore)
 - [ ] Système de rebirth
+- [ ] Pets collecteurs automatiques
+- [ ] Effets sonores
 - [ ] Zones de minage spéciales
 - [ ] Événements et bonus
+- [ ] Particules et effets améliorés
 
 ## 📝 Notes Techniques
 
@@ -118,9 +163,30 @@ Le script affiche des logs détaillés :
 - 🌍 Génération de la surface
 - ⛏️ Génération des chunks
 - ✅ Initialisation des joueurs
+- 📋 Création des données de quêtes
+- ✅ Complétion des quêtes
+
+## ⚠️ Problèmes Connus
+
+### Génération de Chunks
+- La génération progressive des chunks peut causer des lags
+- Nécessite optimisation du système de chargement
+- Solution en développement : streaming amélioré
+
+### Visuels
+- Couleurs à rendre plus vives et distinctives
+- Amélioration de l'attractivité visuelle de la map en cours
+
+## 💡 Conseils d'Utilisation
+
+- **Performance** : Réduire SURFACE_RADIUS si lag (40 → 30)
+- **Chunks** : Ajuster CHUNK_SIZE pour meilleure fluidité (10 → 8)
+- **Pioches** : Créer les modèles de tools dans ReplicatedStorage avant de lancer
+- **Test** : Tester avec 1-2 joueurs d'abord avant déploiement
 
 ---
 
-**Version** : 2.0
+**Version** : 2.1
 **Créé par** : Claude
 **Status** : En développement actif
+**Dernière mise à jour** : Système de quêtes + GUI complète
