@@ -1,77 +1,96 @@
--- SYSTÈME DE QUÊTES - Script Serveur
--- À placer dans ServerScriptService (NOUVEAU SCRIPT)
+--[[
+	MINE SIMULATOR - SYSTÈME DE QUÊTES
+	Script à placer dans ServerScriptService
+	Nom: QuestSystem
+
+	Ce script gère les quêtes quotidiennes
+]]
+
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("📋 SYSTÈME DE QUÊTES - DÉMARRAGE")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Configuration des quêtes quotidiennes
-local DailyQuests = {
-	-- QUÊTES SIMPLES (1-4)
+-- Attendre le dossier Remote Events
+local remoteFolder = ReplicatedStorage:WaitForChild("RemoteEvents", 10)
+if not remoteFolder then
+	warn("❌ Dossier RemoteEvents introuvable!")
+	return
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- CONFIGURATION DES QUÊTES
+-- ═══════════════════════════════════════════════════════════
+
+local QUESTS = {
 	{
-		id = "mine_stone",
+		id = "quest_mine_stone",
 		name = "Mineur Débutant",
-		description = "Mine 50 blocs de Pierre",
-		icon = "🪨",
-		targetType = "Stone",
-		targetAmount = 50,
+		description = "Mine 100 blocs de Pierre",
+		icon = "⚪",
+		type = "mine",
+		target = "Stone",
+		targetAmount = 100,
 		reward = 500,
-		difficulty = "simple",
-		color = Color3.fromRGB(150, 150, 150)
+		difficulty = "easy"
 	},
 	{
-		id = "mine_coal",
+		id = "quest_mine_coal",
 		name = "Charbonnier",
-		description = "Mine 30 blocs de Charbon",
+		description = "Mine 50 blocs de Charbon",
 		icon = "⚫",
-		targetType = "Coal",
-		targetAmount = 30,
+		type = "mine",
+		target = "Coal",
+		targetAmount = 50,
 		reward = 800,
-		difficulty = "simple",
-		color = Color3.fromRGB(50, 50, 50)
+		difficulty = "easy"
 	},
 	{
-		id = "earn_money",
-		name = "Entrepreneur",
+		id = "quest_earn_money",
+		name = "Homme d'Affaires",
 		description = "Gagne 5000$ au total",
 		icon = "💰",
-		targetType = "money",
+		type = "money",
+		target = "money",
 		targetAmount = 5000,
 		reward = 1500,
-		difficulty = "simple",
-		color = Color3.fromRGB(255, 215, 0)
+		difficulty = "medium"
 	},
 	{
-		id = "mine_iron",
-		name = "Forgeron",
-		description = "Mine 20 blocs de Fer",
-		icon = "⚪",
-		targetType = "Iron",
-		targetAmount = 20,
-		reward = 1200,
-		difficulty = "simple",
-		color = Color3.fromRGB(200, 200, 200)
+		id = "quest_mine_gold",
+		name = "Chercheur d'Or",
+		description = "Mine 25 blocs d'Or",
+		icon = "🟡",
+		type = "mine",
+		target = "Gold",
+		targetAmount = 25,
+		reward = 2000,
+		difficulty = "medium"
 	},
-
-	-- QUÊTE DIFFICILE (5)
 	{
-		id = "legendary_miner",
+		id = "quest_legendary",
 		name = "⭐ MAÎTRE MINEUR ⭐",
-		description = "Mine 10 Diamants, 5 Émeraudes et 3 Rubis",
+		description = "Mine 10 Diamants ET 5 Obsidiennes",
 		icon = "💎",
-		targetType = "multiple",
+		type = "multi",
 		targets = {
-			{type = "Diamond", amount = 10},
-			{type = "Emerald", amount = 5},
-			{type = "Ruby", amount = 3}
+			{name = "Diamond", amount = 10},
+			{name = "Obsidian", amount = 5}
 		},
 		reward = 25000,
-		difficulty = "legendary",
-		color = Color3.fromRGB(150, 0, 255)
+		difficulty = "legendary"
 	}
 }
 
--- Créer les données de quêtes pour un joueur
+-- ═══════════════════════════════════════════════════════════
+-- SYSTÈME DE DONNÉES QUÊTES
+-- ═══════════════════════════════════════════════════════════
+
 local function setupQuestData(player)
+	print("📋 Configuration des quêtes pour: " .. player.Name)
+
 	local questData = Instance.new("Folder")
 	questData.Name = "QuestData"
 	questData.Parent = player
@@ -80,54 +99,62 @@ local function setupQuestData(player)
 	questProgress.Name = "QuestProgress"
 	questProgress.Parent = questData
 
-	local completedQuests = Instance.new("Folder")
-	completedQuests.Name = "CompletedQuests"
-	completedQuests.Parent = questData
+	local completed = Instance.new("Folder")
+	completed.Name = "Completed"
+	completed.Parent = questData
 
 	local totalMoneyEarned = Instance.new("IntValue")
 	totalMoneyEarned.Name = "TotalMoneyEarned"
 	totalMoneyEarned.Value = 0
 	totalMoneyEarned.Parent = questData
 
-	for _, quest in ipairs(DailyQuests) do
-		if quest.targetType == "multiple" then
-			local questFolder = Instance.new("Folder")
-			questFolder.Name = quest.id
-			questFolder.Parent = questProgress
+	-- Créer tracking pour chaque quête
+	for _, quest in ipairs(QUESTS) do
+		if quest.type == "multi" then
+			-- Quête multi-objectifs
+			local multiFolder = Instance.new("Folder")
+			multiFolder.Name = quest.id
+			multiFolder.Parent = questProgress
 
 			for _, target in ipairs(quest.targets) do
 				local progress = Instance.new("IntValue")
-				progress.Name = target.type
+				progress.Name = target.name
 				progress.Value = 0
-				progress.Parent = questFolder
+				progress.Parent = multiFolder
 			end
 		else
+			-- Quête simple
 			local progress = Instance.new("IntValue")
 			progress.Name = quest.id
 			progress.Value = 0
 			progress.Parent = questProgress
 		end
 
-		local completed = Instance.new("BoolValue")
-		completed.Name = quest.id
-		completed.Value = false
-		completed.Parent = completedQuests
+		-- État de complétion
+		local isCompleted = Instance.new("BoolValue")
+		isCompleted.Name = quest.id
+		isCompleted.Value = false
+		isCompleted.Parent = completed
 	end
 
-	print("✅ Données de quêtes créées pour " .. player.Name)
+	print("✅ Quêtes configurées pour: " .. player.Name)
 end
 
--- Mettre à jour la progression d'une quête
-local function updateQuestProgress(player, questId, mineralType, amount)
+-- ═══════════════════════════════════════════════════════════
+-- TRACKING DES QUÊTES
+-- ═══════════════════════════════════════════════════════════
+
+local function updateQuestProgress(player, questId, mineralName, amount)
 	local questData = player:FindFirstChild("QuestData")
 	if not questData then return end
 
 	local questProgress = questData:FindFirstChild("QuestProgress")
-	local completedQuests = questData:FindFirstChild("CompletedQuests")
-	if not questProgress or not completedQuests then return end
+	local completed = questData:FindFirstChild("Completed")
+	if not questProgress or not completed then return end
 
+	-- Trouver la quête
 	local quest = nil
-	for _, q in ipairs(DailyQuests) do
+	for _, q in ipairs(QUESTS) do
 		if q.id == questId then
 			quest = q
 			break
@@ -136,35 +163,38 @@ local function updateQuestProgress(player, questId, mineralType, amount)
 
 	if not quest then return end
 
-	local completed = completedQuests:FindFirstChild(questId)
-	if completed and completed.Value then return end
+	-- Vérifier si déjà complétée
+	local completedValue = completed:FindFirstChild(questId)
+	if completedValue and completedValue.Value then return end
 
-	if quest.targetType == "multiple" then
-		local questFolder = questProgress:FindFirstChild(questId)
-		if questFolder then
-			local progress = questFolder:FindFirstChild(mineralType)
-			if progress then
-				local targetAmount = 0
+	-- Mettre à jour progression
+	if quest.type == "multi" then
+		local multiFolder = questProgress:FindFirstChild(questId)
+		if multiFolder then
+			local targetProgress = multiFolder:FindFirstChild(mineralName)
+			if targetProgress then
+				-- Trouver amount max pour ce target
+				local maxAmount = 0
 				for _, target in ipairs(quest.targets) do
-					if target.type == mineralType then
-						targetAmount = target.amount
+					if target.name == mineralName then
+						maxAmount = target.amount
 						break
 					end
 				end
 
-				progress.Value = math.min(progress.Value + amount, targetAmount)
+				targetProgress.Value = math.min(targetProgress.Value + amount, maxAmount)
 
+				-- Vérifier si tous les objectifs sont atteints
 				local allComplete = true
 				for _, target in ipairs(quest.targets) do
-					local targetProgress = questFolder:FindFirstChild(target.type)
-					if not targetProgress or targetProgress.Value < target.amount then
+					local prog = multiFolder:FindFirstChild(target.name)
+					if not prog or prog.Value < target.amount then
 						allComplete = false
 						break
 					end
 				end
 
-				if allComplete and completed then
-					completed.Value = true
+				if allComplete then
 					completeQuest(player, quest)
 				end
 			end
@@ -174,94 +204,90 @@ local function updateQuestProgress(player, questId, mineralType, amount)
 		if progress then
 			progress.Value = math.min(progress.Value + amount, quest.targetAmount)
 
-			if progress.Value >= quest.targetAmount and completed then
-				completed.Value = true
+			if progress.Value >= quest.targetAmount then
 				completeQuest(player, quest)
 			end
 		end
 	end
 end
 
--- Compléter une quête
 function completeQuest(player, quest)
-	print("✅ " .. player.Name .. " a complété la quête: " .. quest.name)
+	print(string.format("🎉 %s a complété: %s", player.Name, quest.name))
 
-	if player.leaderstats and player.leaderstats:FindFirstChild("Money") then
-		player.leaderstats.Money.Value = player.leaderstats.Money.Value + quest.reward
-	end
-
-	local remoteFolder = ReplicatedStorage:FindFirstChild("MineSimulator")
-	if remoteFolder then
-		local questCompleteEvent = remoteFolder:FindFirstChild("QuestComplete")
-		if questCompleteEvent then
-			questCompleteEvent:FireClient(player, quest)
-		end
-	end
-end
-
--- Tracker de minage
-local function trackMining(player, mineralType, amount)
-	for _, quest in ipairs(DailyQuests) do
-		if quest.targetType == mineralType or
-		   (quest.targetType == "multiple" and quest.targets) then
-			updateQuestProgress(player, quest.id, mineralType, amount)
-		end
-	end
-end
-
--- Tracker d'argent gagné
-local function trackMoneyEarned(player, amount)
+	-- Marquer comme complétée
 	local questData = player:FindFirstChild("QuestData")
-	if not questData then return end
+	if questData then
+		local completed = questData:FindFirstChild("Completed")
+		if completed then
+			local completedValue = completed:FindFirstChild(quest.id)
+			if completedValue then
+				completedValue.Value = true
+			end
+		end
+	end
 
-	local totalMoneyEarned = questData:FindFirstChild("TotalMoneyEarned")
-	if totalMoneyEarned then
-		totalMoneyEarned.Value = totalMoneyEarned.Value + amount
+	-- Donner récompense
+	player.leaderstats.Money.Value = player.leaderstats.Money.Value + quest.reward
 
-		for _, quest in ipairs(DailyQuests) do
-			if quest.targetType == "money" then
-				local questProgress = questData:FindFirstChild("QuestProgress")
-				if questProgress then
-					local progress = questProgress:FindFirstChild(quest.id)
-					if progress then
-						progress.Value = math.min(totalMoneyEarned.Value, quest.targetAmount)
+	-- Notifier le client
+	local questCompleteEvent = remoteFolder:FindFirstChild("QuestComplete")
+	if questCompleteEvent then
+		questCompleteEvent:FireClient(player, quest)
+	end
+end
 
-						local completedQuests = questData:FindFirstChild("CompletedQuests")
-						if completedQuests then
-							local completed = completedQuests:FindFirstChild(quest.id)
-							if completed and not completed.Value and progress.Value >= quest.targetAmount then
-								completed.Value = true
-								completeQuest(player, quest)
-							end
-						end
-					end
+-- ═══════════════════════════════════════════════════════════
+-- TRACKING AUTOMATIQUE
+-- ═══════════════════════════════════════════════════════════
+
+local function trackMining(player, mineralName, amount)
+	-- Trouver toutes les quêtes concernées
+	for _, quest in ipairs(QUESTS) do
+		if quest.type == "mine" and quest.target == mineralName then
+			updateQuestProgress(player, quest.id, mineralName, amount)
+		elseif quest.type == "multi" then
+			-- Vérifier si le minerai est dans les targets
+			for _, target in ipairs(quest.targets) do
+				if target.name == mineralName then
+					updateQuestProgress(player, quest.id, mineralName, amount)
+					break
 				end
 			end
 		end
 	end
 end
 
--- Remote Events
-local remoteFolder = ReplicatedStorage:WaitForChild("MineSimulator")
+local function trackMoney(player, amount)
+	-- Trouver quêtes d'argent
+	for _, quest in ipairs(QUESTS) do
+		if quest.type == "money" then
+			updateQuestProgress(player, quest.id, "money", amount)
+		end
+	end
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- REMOTE EVENTS POUR QUÊTES
+-- ═══════════════════════════════════════════════════════════
 
 local questCompleteEvent = Instance.new("RemoteEvent")
 questCompleteEvent.Name = "QuestComplete"
 questCompleteEvent.Parent = remoteFolder
 
-local getQuestsEvent = Instance.new("RemoteFunction")
-getQuestsEvent.Name = "GetQuests"
-getQuestsEvent.Parent = remoteFolder
+local getQuestsFunc = Instance.new("RemoteFunction")
+getQuestsFunc.Name = "GetQuests"
+getQuestsFunc.Parent = remoteFolder
 
-getQuestsEvent.OnServerInvoke = function(player)
+getQuestsFunc.OnServerInvoke = function(player)
 	local questData = player:FindFirstChild("QuestData")
 	if not questData then return {} end
 
 	local questProgress = questData:FindFirstChild("QuestProgress")
-	local completedQuests = questData:FindFirstChild("CompletedQuests")
+	local completed = questData:FindFirstChild("Completed")
 
-	local questsData = {}
+	local result = {}
 
-	for _, quest in ipairs(DailyQuests) do
+	for _, quest in ipairs(QUESTS) do
 		local questInfo = {
 			id = quest.id,
 			name = quest.name,
@@ -269,85 +295,117 @@ getQuestsEvent.OnServerInvoke = function(player)
 			icon = quest.icon,
 			reward = quest.reward,
 			difficulty = quest.difficulty,
-			color = quest.color,
 			completed = false,
 			progress = {}
 		}
 
-		if quest.targetType == "multiple" then
-			local questFolder = questProgress:FindFirstChild(quest.id)
-			if questFolder then
+		-- Récupérer progression
+		if quest.type == "multi" then
+			local multiFolder = questProgress:FindFirstChild(quest.id)
+			if multiFolder then
 				for _, target in ipairs(quest.targets) do
-					local progress = questFolder:FindFirstChild(target.type)
+					local prog = multiFolder:FindFirstChild(target.name)
 					table.insert(questInfo.progress, {
-						type = target.type,
-						current = progress and progress.Value or 0,
+						name = target.name,
+						current = prog and prog.Value or 0,
 						target = target.amount
 					})
 				end
 			end
 		else
-			local progress = questProgress:FindFirstChild(quest.id)
+			local prog = questProgress:FindFirstChild(quest.id)
 			table.insert(questInfo.progress, {
-				type = quest.targetType,
-				current = progress and progress.Value or 0,
+				name = quest.target,
+				current = prog and prog.Value or 0,
 				target = quest.targetAmount
 			})
 		end
 
-		local completed = completedQuests:FindFirstChild(quest.id)
-		if completed then
-			questInfo.completed = completed.Value
+		-- État de complétion
+		local completedValue = completed:FindFirstChild(quest.id)
+		if completedValue then
+			questInfo.completed = completedValue.Value
 		end
 
-		table.insert(questsData, questInfo)
+		table.insert(result, questInfo)
 	end
 
-	return questsData
+	return result
 end
 
--- Connecter au système de minage
-Players.PlayerAdded:Connect(function(player)
-	setupQuestData(player)
+-- ═══════════════════════════════════════════════════════════
+-- CONNEXIONS AVEC INVENTAIRE
+-- ═══════════════════════════════════════════════════════════
 
-	player.CharacterAdded:Connect(function()
-		wait(1)
+local function setupInventoryTracking(player)
+	local inventory = player:WaitForChild("Inventory", 5)
+	if not inventory then return end
 
-		-- Observer l'inventaire
-		local inventory = player:WaitForChild("Inventory")
+	-- Observer changements d'inventaire
+	for _, mineralValue in pairs(inventory:GetChildren()) do
+		if mineralValue:IsA("IntValue") then
+			mineralValue:GetPropertyChangedSignal("Value"):Connect(function()
+				local previousValue = mineralValue:GetAttribute("PreviousValue") or 0
+				local newValue = mineralValue.Value
+				local difference = newValue - previousValue
 
-		for _, mineralValue in pairs(inventory:GetChildren()) do
-			if mineralValue:IsA("IntValue") then
-				mineralValue:SetAttribute("PreviousValue", mineralValue.Value)
+				if difference > 0 then
+					trackMining(player, mineralValue.Name, difference)
+				end
 
-				mineralValue.Changed:Connect(function(newValue)
-					local previousValue = mineralValue:GetAttribute("PreviousValue") or 0
-					local difference = newValue - previousValue
+				mineralValue:SetAttribute("PreviousValue", newValue)
+			end)
 
-					if difference > 0 then
-						trackMining(player, mineralValue.Name, difference)
-					end
+			-- Initialiser valeur précédente
+			mineralValue:SetAttribute("PreviousValue", mineralValue.Value)
+		end
+	end
+end
 
-					mineralValue:SetAttribute("PreviousValue", newValue)
-				end)
+local function setupMoneyTracking(player)
+	local money = player:WaitForChild("leaderstats"):WaitForChild("Money")
+
+	money:GetPropertyChangedSignal("Value"):Connect(function()
+		local previousMoney = money:GetAttribute("PreviousMoney") or 0
+		local newMoney = money.Value
+		local difference = newMoney - previousMoney
+
+		if difference > 0 then
+			-- Mettre à jour total gagné
+			local questData = player:FindFirstChild("QuestData")
+			if questData then
+				local totalMoneyEarned = questData:FindFirstChild("TotalMoneyEarned")
+				if totalMoneyEarned then
+					totalMoneyEarned.Value = totalMoneyEarned.Value + difference
+					trackMoney(player, difference)
+				end
 			end
 		end
 
-		-- Observer l'argent
-		local money = player.leaderstats:WaitForChild("Money")
-		money:SetAttribute("PreviousMoney", money.Value)
-
-		money.Changed:Connect(function(newValue)
-			local previousMoney = money:GetAttribute("PreviousMoney") or 0
-			local difference = newValue - previousMoney
-
-			if difference > 0 then
-				trackMoneyEarned(player, difference)
-			end
-
-			money:SetAttribute("PreviousMoney", newValue)
-		end)
+		money:SetAttribute("PreviousMoney", newMoney)
 	end)
+
+	money:SetAttribute("PreviousMoney", money.Value)
+end
+
+-- ═══════════════════════════════════════════════════════════
+-- INITIALISATION
+-- ═══════════════════════════════════════════════════════════
+
+Players.PlayerAdded:Connect(function(player)
+	-- Attendre que les données principales soient créées
+	player:WaitForChild("leaderstats", 5)
+	player:WaitForChild("Inventory", 5)
+
+	-- Setup quêtes
+	setupQuestData(player)
+
+	-- Setup tracking
+	task.wait(1) -- Petit délai pour s'assurer que tout est prêt
+	setupInventoryTracking(player)
+	setupMoneyTracking(player)
 end)
 
-print("✅ Système de Quêtes chargé!")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("✅ SYSTÈME DE QUÊTES PRÊT")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
