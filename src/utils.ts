@@ -11,6 +11,8 @@ export function createPageUrl(pageName: string): string {
     'Quran': '/quran',
     'Settings': '/settings',
     'Tajweed': '/tajweed',
+    'Profile': '/profile',
+    'LoadingScreen': '/loading',
   };
 
   return routes[pageName] || '/';
