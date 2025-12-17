@@ -800,63 +800,78 @@ const ALLAH_NAMES = [
 ];
 
 export default function AllahNames() {
-  const [selectedName, setSelectedName] = useState(ALLAH_NAMES[0]);
+  const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
+
+  const toggleFlip = (number: number) => {
+    setFlippedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(number)) {
+        newSet.delete(number);
+      } else {
+        newSet.add(number);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
-        {ALLAH_NAMES.map((name) => (
-          <Card
-            key={name.number}
-            className={`cursor-pointer transition-all hover:shadow-lg ${
-              selectedName.number === name.number
-                ? 'border-[#0d9488] border-2 bg-[#0d9488]/5 shadow-md'
-                : 'hover:border-[#0d9488]/30'
-            }`}
-            onClick={() => setSelectedName(name)}
-          >
-            <CardContent className="p-3 text-center">
-              <div className="text-xs text-gray-500 mb-1">{name.number}</div>
-              <div className="text-2xl font-serif text-gray-800 mb-1">{name.arabic}</div>
-              <div className="text-xs text-gray-600 font-medium">{name.transliteration}</div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {ALLAH_NAMES.map((name) => {
+          const isFlipped = flippedCards.has(name.number);
+
+          return (
+            <div
+              key={name.number}
+              className="relative h-64 cursor-pointer perspective-1000"
+              onClick={() => toggleFlip(name.number)}
+            >
+              <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+                {/* Recto - Nom */}
+                <Card className="absolute w-full h-full backface-hidden hover:shadow-xl transition-shadow border-2 border-[#0d9488]/20 hover:border-[#0d9488]/40">
+                  <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#0d9488]/5 to-emerald-50">
+                    <Badge className="mb-2 bg-[#0d9488] text-white border-none text-xs">
+                      #{name.number}
+                    </Badge>
+                    <div className="text-4xl md:text-5xl font-serif text-[#0d9488] mb-3 leading-relaxed">{name.arabic}</div>
+                    <h3 className="text-lg font-bold text-gray-800 mb-1">{name.transliteration}</h3>
+                    <p className="text-sm text-gray-600 font-medium">{name.meaning}</p>
+                    <p className="text-xs text-[#0d9488] mt-3 opacity-60">Cliquer pour voir l'explication</p>
+                  </CardContent>
+                </Card>
+
+                {/* Verso - Explication */}
+                <Card className="absolute w-full h-full backface-hidden rotate-y-180 hover:shadow-xl transition-shadow border-2 border-amber-200">
+                  <CardContent className="p-4 h-full overflow-y-auto bg-gradient-to-br from-amber-50 to-orange-50">
+                    <div className="mb-3">
+                      <Badge className="bg-[#0d9488] text-white border-none text-xs mb-2">
+                        #{name.number} - {name.transliteration}
+                      </Badge>
+                      <h4 className="font-bold text-gray-800 text-sm flex items-center gap-1 mb-2">
+                        <BookOpen className="w-4 h-4 text-[#0d9488]" />
+                        Explication
+                      </h4>
+                      <p className="text-xs text-gray-700 leading-relaxed mb-3">
+                        {name.explanation}
+                      </p>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-3 border border-amber-200">
+                      <h4 className="font-bold text-amber-800 text-xs flex items-center gap-1 mb-2">
+                        <BookOpen className="w-3 h-3 text-amber-600" />
+                        Référence
+                      </h4>
+                      <p className="text-xs text-amber-900 italic leading-relaxed">
+                        {name.verse}
+                      </p>
+                    </div>
+                    <p className="text-xs text-center text-[#0d9488] mt-3 opacity-60">Cliquer pour retourner</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          );
+        })}
       </div>
-
-      {/* Selected Name Details */}
-      <Card className="bg-gradient-to-br from-[#0d9488]/10 via-emerald-50 to-teal-50 border-2 border-[#0d9488]/20 shadow-lg">
-        <CardContent className="p-8">
-          <div className="text-center mb-6">
-            <div className="text-7xl font-serif text-[#0d9488] mb-4 leading-relaxed">{selectedName.arabic}</div>
-            <h3 className="text-3xl font-bold text-gray-800 mb-2">{selectedName.transliteration}</h3>
-            <p className="text-xl text-[#0d9488] font-semibold mb-1">{selectedName.meaning}</p>
-            <Badge className="bg-[#0d9488] text-white border-none mt-2">
-              Nom #{selectedName.number} / 99
-            </Badge>
-          </div>
-
-          <div className="bg-white/70 rounded-2xl p-6 mb-4">
-            <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-[#0d9488]" />
-              Explication
-            </h4>
-            <p className="text-gray-700 leading-relaxed">
-              {selectedName.explanation}
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border-2 border-amber-200">
-            <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-amber-600" />
-              Référence du Coran ou Hadith
-            </h4>
-            <p className="text-amber-900 italic leading-relaxed">
-              {selectedName.verse}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

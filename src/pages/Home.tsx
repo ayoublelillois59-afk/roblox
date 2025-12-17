@@ -335,13 +335,20 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Blocs Principaux - Compacts et Professionnels */}
+        {/* Blocs Principaux - Compacts et Professionnels avec images de fond */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <Link to={createPageUrl('Quran')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-emerald-300 overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 h-full">
-              <CardContent className="p-4">
+            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-emerald-300 overflow-hidden h-full relative">
+              {/* Fond avec motif Coran */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-95"></div>
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] font-arabic leading-none">
+                  القرآن
+                </div>
+              </div>
+              <CardContent className="p-4 relative z-10">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform">
+                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -362,10 +369,17 @@ export default function HomePage() {
           </Link>
 
           <Link to={createPageUrl('Prayer')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-300 overflow-hidden bg-gradient-to-br from-purple-500 to-indigo-600 h-full">
-              <CardContent className="p-4">
+            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-300 overflow-hidden h-full relative">
+              {/* Fond avec motif Prière */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-95"></div>
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] font-arabic leading-none">
+                  🕌
+                </div>
+              </div>
+              <CardContent className="p-4 relative z-10">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform">
+                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -386,10 +400,17 @@ export default function HomePage() {
           </Link>
 
           <Link to={createPageUrl('Tajweed')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-300 overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600 h-full">
-              <CardContent className="p-4">
+            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-300 overflow-hidden h-full relative">
+              {/* Fond avec motif Tajweed */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-600 opacity-95"></div>
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] font-arabic leading-none">
+                  التجويد
+                </div>
+              </div>
+              <CardContent className="p-4 relative z-10">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform">
+                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
                     <Mic className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -410,10 +431,17 @@ export default function HomePage() {
           </Link>
 
           <Link to={createPageUrl('Learn')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-pink-300 overflow-hidden bg-gradient-to-br from-pink-500 to-rose-600 h-full">
-              <CardContent className="p-4">
+            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-pink-300 overflow-hidden h-full relative">
+              {/* Fond avec motif Apprentissage */}
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-rose-600 opacity-95"></div>
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] leading-none">
+                  📚
+                </div>
+              </div>
+              <CardContent className="p-4 relative z-10">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform">
+                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
