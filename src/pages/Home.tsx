@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   BookOpen, Clock, Mic, GraduationCap, Heart, Hash, Star,
-  Users, Sparkles, Award, Volume2, Compass,
-  Sun, Sunrise, Sunset, Moon, User
+  Users, Sparkles, Award, Volume2,
+  Sun, Sunrise, Sunset, Moon, User, Pause
 } from 'lucide-react';
 import { createPageUrl } from "@/utils";
 
@@ -44,7 +44,7 @@ const ISLAMIC_FIGURES = [
     category: "Prophète",
     description: "Le dernier prophète envoyé par Allah, modèle parfait pour l'humanité. Né à La Mecque en 570, il reçut la révélation à l'âge de 40 ans.",
     source: "Sahih Bukhari, Sahih Muslim",
-    story: "Muhammad ﷺ est né à La Mecque en l'an 570. Orphelin dès son plus jeune âge, il fut élevé par son grand-père puis par son oncle Abou Talib. Connu pour sa droiture et son honnêteté, il fut surnommé 'Al-Amin' (le digne de confiance). À l'âge de 40 ans, il reçut la première révélation dans la grotte de Hira. Il passa 23 années à transmettre le message d'Allah, enseignant l'unicité divine, la justice, la miséricorde et la compassion."
+    story: "Muhammad ﷺ est né à La Mecque en l'an 570, année dite de l'Éléphant. Orphelin dès son plus jeune âge - son père Abdullah mourut avant sa naissance et sa mère Amina alors qu'il n'avait que six ans - il fut d'abord élevé par son grand-père Abdul-Muttalib, puis par son oncle Abou Talib après la mort de ce dernier.\n\nDès sa jeunesse, il se distingua par une droiture exemplaire et une honnêteté sans faille, ce qui lui valut le surnom d'Al-Amin (le digne de confiance). Même avant la révélation, il ne se prosternait jamais devant les idoles et se retirait régulièrement pour méditer dans la grotte de Hira.\n\nÀ l'âge de 40 ans, durant le mois de Ramadan, l'ange Jibril lui apparut dans cette grotte et lui révéla les premiers versets du Coran : 'Lis au nom de ton Seigneur qui a créé...'. Cette nuit, appelée Laylat al-Qadr (la Nuit du Destin), marqua le début de sa mission prophétique.\n\nPendant 23 années, malgré les persécutions intenses, les tentatives d'assassinat, l'exil et les guerres défensives, il ne cessa jamais de transmettre le message d'Allah. Il enseigna l'unicité divine (Tawhid), la justice sociale, l'égalité entre les humains, la miséricorde envers toutes les créatures, et établit une société modèle à Médine basée sur la fraternité et la justice. Son dernier sermon au Mont Arafat résuma tous les enseignements de l'Islam. Il mourut en 632, laissant derrière lui une umma unie et le Coran complet."
   },
   {
     id: 2,
@@ -55,7 +55,7 @@ const ISLAMIC_FIGURES = [
     category: "Compagnon",
     description: "Premier calife de l'Islam, premier homme à embrasser l'Islam, ami proche du Prophète ﷺ.",
     source: "Sahih Bukhari 3661, Sahih Muslim 2382",
-    story: "Abu Bakr fut le premier homme libre à accepter l'Islam. D'une fidélité inébranlable, il accompagna le Prophète ﷺ lors de l'Hégire. Lors de l'incident d'Al-Isra wa Al-Mi'raj, quand certains doutaient, Abu Bakr dit : 'Si Muhammad l'a dit, c'est vrai', lui valant le titre d'As-Siddiq (le Véridique). Il devint le premier calife après la mort du Prophète ﷺ et unifia la communauté musulmane."
+    story: "Abu Bakr, riche marchand mecquois, fut le premier homme adulte libre à embrasser l'Islam sans hésitation. Son acceptation immédiate du message du Prophète ﷺ témoignait de sa foi profonde et de sa connaissance du caractère noble de Muhammad ﷺ.\n\nD'une générosité légendaire, il dépensa toute sa fortune pour la cause de l'Islam, rachetant et libérant des esclaves musulmans torturés comme Bilal. Le Prophète ﷺ dit : 'Aucune fortune ne m'a autant profité que celle d'Abu Bakr.'\n\nLors de l'Hégire vers Médine, alors que les Quraych offraient une récompense pour la capture du Prophète ﷺ, Abu Bakr l'accompagna dans sa périlleuse fuite. Dans la grotte de Thawr, quand les poursuivants s'approchèrent, Abu Bakr s'inquiéta. Le Prophète ﷺ le rassura : 'Ne t'afflige pas, Allah est avec nous.' Une araignée tissa sa toile et des pigeons nichèrent à l'entrée, trompant les ennemis.\n\nSon titre 'As-Siddiq' (le Véridique) lui fut donné lors de l'incident d'Al-Isra wa Al-Mi'raj. Quand les Quraych se moquèrent du voyage nocturne du Prophète ﷺ, Abu Bakr répondit avec une foi inébranlable : 'Si Muhammad l'a dit, c'est absolument vrai.'\n\nAprès la mort du Prophète ﷺ, en tant que premier calife (632-634), il affronta les tribus rebelles (Ridda), unifia la communauté musulmane ébranlée, et ordonna la compilation écrite du Coran. Humble et ascétique, il continua à traire ses propres chèvres même en tant que calife. Il mourut après seulement deux ans de califat, laissant un héritage de fidélité et de sagesse."
   },
   {
     id: 3,
@@ -66,7 +66,7 @@ const ISLAMIC_FIGURES = [
     category: "Compagnon",
     description: "Deuxième calife, connu pour sa justice exemplaire. Le Coran descendit en accord avec ses avis à plusieurs reprises.",
     source: "Sahih Bukhari 3684, Tirmidhi 3681",
-    story: "Omar était connu pour sa force et son caractère ferme avant l'Islam. Sa conversion transforma l'Islam, permettant aux musulmans de prier publiquement à la Ka'ba. Comme calife, il établit un système judiciaire équitable, créa le calendrier hégirien, et étendit l'État islamique. Il dormait sous un arbre avec une simple natte comme lit. Umar dit : 'Si un chien mourait de faim sur les rives de l'Euphrate, Omar en serait responsable devant Allah.'"
+    story: "Avant sa conversion, Omar était l'un des plus farouches opposants à l'Islam, connu pour sa force physique impressionnante et son caractère impétueux. Un jour, armé de son épée, il partit pour tuer le Prophète ﷺ. En chemin, on lui apprit que sa propre sœur et son beau-frère avaient embrassé l'Islam. Furieux, il se rendit chez eux et les frappa. Mais quand il entendit les versets du Coran qu'ils récitaient, son cœur se transforma. Il se rendit immédiatement auprès du Prophète ﷺ et prononça la shahada.\n\nSa conversion en l'an 6 de la mission prophétique fut un tournant décisif pour l'Islam. Le Prophète ﷺ avait prié : 'Ô Allah, fortifie l'Islam par l'un des deux Omar.' Après sa conversion, les musulmans purent prier ouvertement à la Ka'ba pour la première fois. Le Prophète ﷺ lui donna le titre d'Al-Faruq (celui qui distingue le vrai du faux).\n\nDurant son califat (634-644), Omar transforma l'État islamique en un empire s'étendant de la Perse à l'Égypte. Il établit le système de justice (Qada), créa le calendrier hégirien basé sur l'Hégire, institua le trésor public (Bayt al-Mal), et organisa des registres pour distribuer équitablement les richesses.\n\nMalgré sa position, Omar vivait dans une extrême simplicité. Il dormait sous un palmier sur une natte qui laissait des marques sur son corps. Il patrouillait les rues de Médine la nuit pour s'assurer du bien-être de son peuple. Il dit : 'Si un chien mourait de faim sur les rives de l'Euphrate, Omar en serait responsable devant Allah.'\n\nIl fut martyrisé en 644 par un esclave perse pendant qu'il dirigeait la prière de Fajr. Avant de mourir, il demanda à être enterré à côté du Prophète ﷺ et d'Abu Bakr."
   },
   {
     id: 4,
@@ -121,7 +121,7 @@ const ISLAMIC_FIGURES = [
     category: "Compagnon",
     description: "Premier muezzin de l'Islam. Esclave africain torturé pour sa foi, libéré par Abu Bakr. Sa voix appelait les croyants à la prière.",
     source: "Sahih Bukhari 3754, Ibn Sa'd - At-Tabaqat",
-    story: "Bilal était un esclave africain qui embrassa l'Islam à ses débuts. Son maître le tortura horriblement sous le soleil brûlant avec une pierre énorme sur sa poitrine. Il ne disait qu''Ahad, Ahad' (Un, Un - affirmant l'unicité d'Allah). Abu Bakr le racheta et le libéra. Le Prophète ﷺ le choisit comme premier muezzin. Sa voix magnifique appelait les croyants à la prière. Après la mort du Prophète ﷺ, il ne put plus faire l'adhan tant son chagrin était grand."
+    story: "Bilal ibn Rabah était un esclave d'origine africaine (éthiopienne) appartenant à Umayya ibn Khalaf, l'un des plus cruels chefs de La Mecque. Quand Bilal embrassa l'Islam parmi les premiers convertis, il devint la cible de tortures atroces visant à lui faire renier sa foi.\n\nSon maître le traînait dans le désert brûlant de La Mecque à midi, le jetait sur le sable ardent et plaçait un rocher énorme sur sa poitrine, lui ordonnant de renier Allah et Muhammad. Sous cette torture insoutenable, Bilal ne prononçait qu'un seul mot : 'Ahad, Ahad' (Un, Un), affirmant l'unicité d'Allah. Sa foi inébranlable impressionna profondément Abu Bakr qui le racheta et le libéra.\n\nLibre, Bilal devint l'un des compagnons les plus proches du Prophète ﷺ. Sa voix mélodieuse et puissante le désigna naturellement comme le premier muezzin de l'Islam. Chaque jour, sa voix s'élevait pour appeler les croyants à la prière, un symbole vivant de la victoire de la foi sur l'oppression.\n\nLe Prophète ﷺ l'aimait profondément et le considérait comme un frère. Il dit : 'J'ai vu Bilal me précéder au Paradis.' Lors de la conquête de La Mecque, Bilal monta sur la Ka'ba purifiée des idoles et lança l'adhan, accomplissant ainsi un moment historique de victoire et de justice.\n\nAprès la mort du Prophète ﷺ en 632, Bilal fut si affligé qu'il ne put plus faire l'adhan à Médine, chaque appel à la prière ravivant son immense chagrin. Il partit pour la Syrie où il continua à servir l'Islam. Avant sa mort, il vit en rêve le Prophète ﷺ lui demandant de revenir le voir. Il retourna à Médine et, à la demande des compagnons, fit l'adhan une dernière fois. Tous les musulmans présents pleurèrent en entendant sa voix."
   },
   {
     id: 9,
@@ -206,6 +206,7 @@ export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [nextPrayer, setNextPrayer] = useState<{ name: string; time: string; remaining: number } | null>(null);
   const [selectedFigure, setSelectedFigure] = useState<typeof ISLAMIC_FIGURES[0] | null>(null);
+  const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
     // Changer le verset chaque jour
@@ -262,6 +263,50 @@ export default function HomePage() {
   };
 
   const PrayerIcon = getPrayerIcon();
+
+  // Fonction pour lire l'histoire avec voix naturelle
+  const handleReadStory = () => {
+    if (!selectedFigure) return;
+
+    // Si déjà en train de lire, arrêter
+    if (isReading) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      return;
+    }
+
+    // Créer un nouvel utterance pour la lecture
+    const utterance = new SpeechSynthesisUtterance(selectedFigure.story);
+
+    // Configuration pour voix française naturelle
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.9; // Vitesse légèrement ralentie pour meilleure compréhension
+    utterance.pitch = 1.0; // Ton normal
+    utterance.volume = 1.0; // Volume maximum
+
+    // Essayer de trouver une voix française
+    const voices = window.speechSynthesis.getVoices();
+    const frenchVoice = voices.find(voice => voice.lang.startsWith('fr'));
+    if (frenchVoice) {
+      utterance.voice = frenchVoice;
+    }
+
+    // Gérer les événements
+    utterance.onstart = () => setIsReading(true);
+    utterance.onend = () => setIsReading(false);
+    utterance.onerror = () => setIsReading(false);
+
+    // Lancer la lecture
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Arrêter la lecture si le modal se ferme
+  useEffect(() => {
+    if (!selectedFigure && isReading) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+    }
+  }, [selectedFigure, isReading]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-900 via-emerald-800 to-teal-900 relative overflow-hidden">
@@ -349,119 +394,83 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Blocs Principaux avec belles images */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Blocs Principaux - Taille réduite */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <Link to={createPageUrl('Quran')}>
-            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-emerald-200 hover:border-emerald-400">
-              {/* Image de fond Coran */}
+            <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden relative border border-white/20 hover:border-emerald-400">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-800">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
-                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 font-arabic leading-none">📖</div>
+                <div className="absolute bottom-0 right-0 text-[80px] text-white/10 leading-none">📖</div>
               </div>
-              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
-                    <BookOpen className="w-6 h-6 text-white" />
+              <CardContent className="p-3 relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 group-hover:scale-110 transition-transform">
+                    <BookOpen className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-white">
-                    <h3 className="font-bold text-lg">Coran</h3>
-                    <p className="text-xl font-arabic">القرآن</p>
+                    <h3 className="font-bold text-base">Coran</h3>
+                    <p className="text-sm font-arabic">القرآن</p>
                   </div>
-                </div>
-                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
-                  <p className="flex items-center gap-1.5">
-                    <Volume2 className="w-3.5 h-3.5" /> Lire & écouter
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <Mic className="w-3.5 h-3.5" /> 5 récitateurs
-                  </p>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to={createPageUrl('Prayer')}>
-            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-purple-200 hover:border-purple-400">
-              {/* Image de fond Prière */}
+            <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden relative border border-white/20 hover:border-purple-400">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-indigo-700 to-purple-800">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQyIiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxjaXJjbGUgY3g9IjMwIiBjeT0iMzAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZDIpIi8+PC9zdmc+')] opacity-30"></div>
-                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 leading-none">🕌</div>
+                <div className="absolute bottom-0 right-0 text-[80px] text-white/10 leading-none">🕌</div>
               </div>
-              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
-                    <Clock className="w-6 h-6 text-white" />
+              <CardContent className="p-3 relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 group-hover:scale-110 transition-transform">
+                    <Clock className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-white">
-                    <h3 className="font-bold text-lg">Prière</h3>
-                    <p className="text-xl font-arabic">الصلاة</p>
+                    <h3 className="font-bold text-base">Prière</h3>
+                    <p className="text-sm font-arabic">الصلاة</p>
                   </div>
-                </div>
-                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
-                  <p className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" /> Horaires précis
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <Compass className="w-3.5 h-3.5" /> Direction Qibla
-                  </p>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to={createPageUrl('Tajweed')}>
-            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-blue-200 hover:border-blue-400">
-              {/* Image de fond Tajweed */}
+            <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden relative border border-white/20 hover:border-blue-400">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-cyan-700 to-blue-800">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQzIiB3aWR0aD0iODAiIGhlaWdodD0iODAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gMCAwIEwgODAgMCBMIDgwIDgwIEwgMCA4MCBaIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4wOCIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkMykiLz48L3N2Zz4=')] opacity-20"></div>
-                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 leading-none">🎤</div>
+                <div className="absolute bottom-0 right-0 text-[80px] text-white/10 leading-none">🎤</div>
               </div>
-              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
-                    <Mic className="w-6 h-6 text-white" />
+              <CardContent className="p-3 relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 group-hover:scale-110 transition-transform">
+                    <Mic className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-white">
-                    <h3 className="font-bold text-lg">Tajweed</h3>
-                    <p className="text-xl font-arabic">التجويد</p>
+                    <h3 className="font-bold text-base">Réciter</h3>
+                    <p className="text-sm font-arabic">التجويد</p>
                   </div>
-                </div>
-                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
-                  <p className="flex items-center gap-1.5">
-                    <Award className="w-3.5 h-3.5" /> Correction IA
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> Tafsir complet
-                  </p>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to={createPageUrl('Learn')}>
-            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-pink-200 hover:border-pink-400">
-              {/* Image de fond Apprendre */}
+            <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden relative border border-white/20 hover:border-pink-400">
               <div className="absolute inset-0 bg-gradient-to-br from-pink-600 via-rose-700 to-pink-800">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9Imdyawq0IiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gMzAgMCBMIDMwIDYwIE0gMCAzMCBMIDYwIDMwIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4wNSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkNCkiLz48L3N2Zz4=')] opacity-20"></div>
-                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 leading-none">🎓</div>
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQ0IiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gMzAgMCBMIDMwIDYwIE0gMCAzMCBMIDYwIDMwIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4wNSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkNCkiLz48L3N2Zz4=')] opacity-20"></div>
+                <div className="absolute bottom-0 right-0 text-[80px] text-white/10 leading-none">🎓</div>
               </div>
-              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
-                    <GraduationCap className="w-6 h-6 text-white" />
+              <CardContent className="p-3 relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 group-hover:scale-110 transition-transform">
+                    <GraduationCap className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-white">
-                    <h3 className="font-bold text-lg">Apprendre</h3>
-                    <p className="text-xl font-arabic">العلم</p>
+                    <h3 className="font-bold text-base">Apprendre</h3>
+                    <p className="text-sm font-arabic">العلم</p>
                   </div>
-                </div>
-                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
-                  <p className="flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5" /> Coran & Arabe
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <GraduationCap className="w-3.5 h-3.5" /> Tajweed
-                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -471,59 +480,56 @@ export default function HomePage() {
         {/* Petits Blocs - Ligne Compacte */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           <Link to={createPageUrl('Adhkar')}>
-            <Card className="hover:shadow-lg transition-all border-2 hover:border-rose-300 bg-gradient-to-br from-white to-rose-50">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="bg-gradient-to-br from-rose-400 to-pink-600 rounded-xl p-3 shadow-md">
+            <Card className="hover:shadow-lg transition-all border border-white/30 hover:border-rose-400 bg-gradient-to-br from-white/95 to-rose-50/95 backdrop-blur-sm">
+              <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
+                <div className="bg-gradient-to-br from-rose-400 to-pink-600 rounded-xl p-2.5 shadow-md">
                   <Heart className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800">Adhkar</h4>
-                  <p className="text-xs text-gray-500">Invocations</p>
+                  <h4 className="font-bold text-gray-800 text-sm">Adhkar</h4>
+                  <p className="text-xs text-gray-600">Invocations</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to={createPageUrl('Dhikr')}>
-            <Card className="hover:shadow-lg transition-all border-2 hover:border-amber-300 bg-gradient-to-br from-white to-amber-50">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl p-3 shadow-md">
+            <Card className="hover:shadow-lg transition-all border border-white/30 hover:border-amber-400 bg-gradient-to-br from-white/95 to-amber-50/95 backdrop-blur-sm">
+              <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
+                <div className="bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl p-2.5 shadow-md">
                   <Hash className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800">Dhikr</h4>
-                  <p className="text-xs text-gray-500">Compteur</p>
+                  <h4 className="font-bold text-gray-800 text-sm">Dhikr</h4>
+                  <p className="text-xs text-gray-600">Compteur</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link to={createPageUrl('Names')}>
-            <Card className="hover:shadow-lg transition-all border-2 hover:border-violet-300 bg-gradient-to-br from-white to-violet-50">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="bg-gradient-to-br from-violet-400 to-purple-600 rounded-xl p-3 shadow-md">
+            <Card className="hover:shadow-lg transition-all border border-white/30 hover:border-violet-400 bg-gradient-to-br from-white/95 to-violet-50/95 backdrop-blur-sm">
+              <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
+                <div className="bg-gradient-to-br from-violet-400 to-purple-600 rounded-xl p-2.5 shadow-md">
                   <Star className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800">99 Noms</h4>
-                  <p className="text-xs text-gray-500">D'Allah</p>
+                  <h4 className="font-bold text-gray-800 text-sm">99 Noms</h4>
+                  <p className="text-xs text-gray-600">D'Allah</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
         </div>
 
-        {/* Grandes Figures de l'Islam - Carrousel d'Images Circulaires */}
+        {/* Grandes Figures de l'Islam - Carrousel de Cartes */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-2.5 shadow-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white drop-shadow-lg">Grandes Figures de l'Islam</h2>
-                <p className="text-sm text-white/80">Cliquez pour découvrir leur histoire</p>
-              </div>
+              <h2 className="text-2xl font-bold text-white drop-shadow-lg">Grandes Figures de l'Islam</h2>
             </div>
             <Badge className="bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg">
               <Award className="w-3 h-3 mr-1" />
@@ -531,53 +537,45 @@ export default function HomePage() {
             </Badge>
           </div>
 
-          {/* Carrousel d'images circulaires */}
+          {/* Carrousel de cartes carrées */}
           <div className="relative">
-            <div className="flex gap-6 overflow-x-auto pb-4 px-2 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10">
+            <div className="flex gap-4 overflow-x-auto pb-4 px-2 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10">
               {ISLAMIC_FIGURES.map((figure) => (
-                <div
+                <Card
                   key={figure.id}
-                  className="flex-shrink-0 cursor-pointer group"
+                  className="flex-shrink-0 w-64 cursor-pointer hover:shadow-2xl transition-all duration-300 group border border-white/20 hover:border-amber-400 overflow-hidden"
                   onClick={() => setSelectedFigure(figure)}
                 >
-                  <div className="relative">
-                    {/* Image circulaire avec gradient */}
-                    <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${figure.gradient} shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110 relative overflow-hidden border-4 border-white/30`}>
-                      {/* Pattern décoratif */}
-                      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InN0YXJzIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjc3RhcnMpIi8+PC9zdmc+')] opacity-40"></div>
+                  {/* Header avec gradient */}
+                  <div className={`h-32 bg-gradient-to-br ${figure.gradient} relative overflow-hidden`}>
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InN0YXJzMiIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4yIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3N0YXJzMikiLz48L3N2Zz4=')] opacity-40"></div>
 
-                      {/* Icône centrale basée sur la catégorie */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        {figure.category === 'Prophète' && (
-                          <div className="text-5xl drop-shadow-lg">⭐</div>
-                        )}
-                        {figure.category === 'Compagnon' && (
-                          <div className="text-5xl drop-shadow-lg">✨</div>
-                        )}
-                        {figure.category === 'Héros' && (
-                          <div className="text-5xl drop-shadow-lg">🗡️</div>
-                        )}
-                        {figure.category === 'Savant' && (
-                          <div className="text-5xl drop-shadow-lg">📚</div>
-                        )}
-                      </div>
-
-                      {/* Badge catégorie en haut */}
-                      <div className="absolute -top-1 -right-1 bg-white rounded-full px-2 py-0.5 shadow-md">
-                        <span className="text-[10px] font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                          {figure.category}
-                        </span>
-                      </div>
+                    {/* Badge catégorie */}
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-white/90 backdrop-blur-sm text-gray-800 border-none text-xs">
+                        {figure.category}
+                      </Badge>
                     </div>
 
-                    {/* Nom en arabe sous l'image (très petit) */}
-                    <div className="mt-2 text-center">
-                      <p className="text-sm font-arabic text-white/90 drop-shadow">
-                        {figure.arabic}
-                      </p>
+                    {/* Icône centrale */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {figure.category === 'Prophète' && <div className="text-6xl drop-shadow-lg">⭐</div>}
+                      {figure.category === 'Compagnon' && <div className="text-6xl drop-shadow-lg">✨</div>}
+                      {figure.category === 'Héros' && <div className="text-6xl drop-shadow-lg">🗡️</div>}
+                      {figure.category === 'Savant' && <div className="text-6xl drop-shadow-lg">📚</div>}
                     </div>
                   </div>
-                </div>
+
+                  {/* Contenu de la carte */}
+                  <CardContent className="p-4 bg-white/95 backdrop-blur-sm">
+                    <h3 className="font-bold text-gray-900 text-base mb-1">{figure.name}</h3>
+                    <p className="text-lg font-arabic text-gray-700 mb-2">{figure.arabic}</p>
+                    <Badge className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border-none text-xs mb-2">
+                      {figure.title}
+                    </Badge>
+                    <p className="text-xs text-gray-600 line-clamp-2">{figure.description}</p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -660,9 +658,12 @@ export default function HomePage() {
                 >
                   Fermer
                 </button>
-                <button className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all">
-                  <Volume2 className="w-4 h-4" />
-                  Écouter
+                <button
+                  onClick={handleReadStory}
+                  className={`flex items-center gap-2 ${isReading ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-amber-500 to-orange-600'} text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all`}
+                >
+                  {isReading ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  {isReading ? 'Arrêter' : 'Écouter'}
                 </button>
               </div>
             </CardContent>
