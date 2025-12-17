@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  BookOpen, GraduationCap, Mic, Volume2, CheckCircle2,
-  Lock, Play, Star, Trophy, Target, Clock, Crown, ArrowRight
+  BookOpen, GraduationCap, Mic, CheckCircle2,
+  Lock, Play, Trophy, Target, Clock, Crown, ArrowRight
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { createPageUrl } from "@/utils";
@@ -162,8 +160,8 @@ const TAJWEED_PROGRAM = {
 };
 
 export default function LearningPrograms() {
-  const [activeProgram, setActiveProgram] = useState("quran");
-  const [expandedLevel, setExpandedLevel] = useState(1);
+  const [activeProgram, setActiveProgram] = useState<"quran" | "arabic" | "tajweed">("quran");
+  const [expandedLevel, setExpandedLevel] = useState<number | null>(1);
 
   const programs = {
     quran: QURAN_PROGRAM,
@@ -173,7 +171,7 @@ export default function LearningPrograms() {
 
   const currentProgram = programs[activeProgram];
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string) => {
     switch(difficulty) {
       case 'facile': return 'bg-green-100 text-green-700';
       case 'moyen': return 'bg-yellow-100 text-yellow-700';
@@ -295,7 +293,7 @@ export default function LearningPrograms() {
                 <div className="grid gap-2 pt-4">
                   {activeProgram === "quran" ? (
                     // Quran Surahs
-                    level.surahs?.map((surah) => (
+                    'surahs' in level && level.surahs?.map((surah: any) => (
                       <div
                         key={surah.number}
                         className="flex items-center justify-between p-3 bg-white rounded-lg border hover:shadow-sm transition-all"
@@ -321,7 +319,7 @@ export default function LearningPrograms() {
                     ))
                   ) : (
                     // Arabic/Tajweed Lessons
-                    level.lessons?.map((lesson) => (
+                    'lessons' in level && level.lessons?.map((lesson: any) => (
                       <div
                         key={lesson.id}
                         className="flex items-center justify-between p-3 bg-white rounded-lg border hover:shadow-sm transition-all"
@@ -348,7 +346,7 @@ export default function LearningPrograms() {
                         <Button
                           size="sm"
                           variant={lesson.completed ? "outline" : "default"}
-                          className={!lesson.completed && "bg-emerald-600 hover:bg-emerald-700"}
+                          className={!lesson.completed ? "bg-emerald-600 hover:bg-emerald-700" : undefined}
                         >
                           {lesson.completed ? "Revoir" : "Commencer"}
                         </Button>

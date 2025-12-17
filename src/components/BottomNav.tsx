@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Clock, GraduationCap, Settings } from 'lucide-react';
 import { createPageUrl } from "@/utils";

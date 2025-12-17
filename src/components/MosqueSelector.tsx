@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Globe, CheckCircle2, Search, Plus } from 'lucide-react';
+import { MapPin, Phone, CheckCircle2, Search, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { Mosque } from '@/entities';
 
-export default function MosqueSelector({ selectedMosqueId, onSelectMosque }) {
+interface MosqueSelectorProps {
+  selectedMosqueId: string | null;
+  onSelectMosque: (mosque: Mosque | null) => void;
+}
+
+export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: MosqueSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
 

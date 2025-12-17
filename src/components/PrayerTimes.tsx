@@ -7,8 +7,11 @@ import { Clock, Sun, Sunrise, Sunset, Moon, RefreshCw, MapPin, Building2, Chevro
 import { cn } from "@/lib/utils";
 import MosqueSelector from "@/components/MosqueSelector";
 import QiblaCompass from "@/components/QiblaCompass";
+import { Mosque } from '@/entities';
 
-const PRAYER_INFO = {
+type PrayerName = 'Fajr' | 'Sunrise' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha';
+
+const PRAYER_INFO: Record<PrayerName, { icon: any; name: string; nameAr: string; color: string }> = {
   Fajr: { icon: Sunrise, name: "Fajr", nameAr: "الفجر", color: "from-indigo-500 to-purple-600" },
   Sunrise: { icon: Sun, name: "Shurûq", nameAr: "الشروق", color: "from-orange-400 to-yellow-500" },
   Dhuhr: { icon: Sun, name: "Dhuhr", nameAr: "الظهر", color: "from-yellow-400 to-orange-500" },
@@ -31,15 +34,39 @@ interface NextPrayer {
   remaining: number | null;
 }
 
+interface Location {
+  lat: number;
+  lng: number;
+}
+
+interface PrayerTimings {
+  Fajr: string;
+  Sunrise: string;
+  Dhuhr: string;
+  Asr: string;
+  Maghrib: string;
+  Isha: string;
+  [key: string]: string;
+}
+
+const getPrayerInfo = (prayerName: string) => {
+  return PRAYER_INFO[prayerName as PrayerName] || {
+    icon: Clock,
+    name: prayerName,
+    nameAr: prayerName,
+    color: "from-emerald-600 to-emerald-700"
+  };
+};
+
 export default function PrayerTimes() {
-  const [prayerTimes, setPrayerTimes] = useState<any>(null);
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTimings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [location, setLocation] = useState<any>(null);
+  const [location, setLocation] = useState<Location | null>(null);
   const [method, setMethod] = useState("12");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [nextPrayer, setNextPrayer] = useState<NextPrayer | null>(null);
-  const [selectedMosque, setSelectedMosque] = useState<any>(null);
+  const [selectedMosque, setSelectedMosque] = useState<Mosque | null>(null);
   const [activeTab, setActiveTab] = useState("auto");
 
   useEffect(() => {
@@ -47,7 +74,7 @@ export default function PrayerTimes() {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchPrayerTimes = async (lat, lng) => {
+  const fetchPrayerTimes = async (lat: number, lng: number) => {
     try {
       setLoading(true);
       const date = new Date();
@@ -101,10 +128,10 @@ export default function PrayerTimes() {
     }
   }, [method]);
 
-  const handleMosqueSelect = (mosque) => {
+  const handleMosqueSelect = (mosque: Mosque | null) => {
     setSelectedMosque(mosque);
     if (mosque?.prayer_times) {
-      setPrayerTimes(mosque.prayer_times);
+      setPrayerTimes(mosque.prayer_times as PrayerTimings);
       setError(null);
       setActiveTab("mosque");
     } else {
@@ -130,7 +157,7 @@ export default function PrayerTimes() {
           setNextPrayer({
             name: prayer,
             time: prayerTimes[prayer],
-            remaining: Math.floor((prayerTime - now) / 1000 / 60)
+            remaining: Math.floor((prayerTime.getTime() - now.getTime()) / 1000 / 60)
           });
           return;
         }
@@ -145,7 +172,7 @@ export default function PrayerTimes() {
     }
   }, [prayerTimes, currentTime]);
 
-  const formatTimeRemaining = (minutes) => {
+  const formatTimeRemaining = (minutes: number | null) => {
     if (minutes === null) return "Demain";
     const hrs = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -218,19 +245,19 @@ export default function PrayerTimes() {
       {nextPrayer && (
         <div className={cn(
           "bg-gradient-to-r rounded-3xl p-6 text-white shadow-xl",
-          PRAYER_INFO[nextPrayer.name]?.color || "from-emerald-600 to-emerald-700"
+          getPrayerInfo(nextPrayer.name).color
         )}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/80 text-sm mb-1">Prochaine prière</p>
               <h3 className="text-3xl font-bold mb-1">
-                {PRAYER_INFO[nextPrayer.name]?.nameAr} - {PRAYER_INFO[nextPrayer.name]?.name}
+                {getPrayerInfo(nextPrayer.name).nameAr} - {getPrayerInfo(nextPrayer.name).name}
               </h3>
               <p className="text-xl">{nextPrayer.time}</p>
             </div>
             <div className="text-right">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-2">
-                {React.createElement(PRAYER_INFO[nextPrayer.name]?.icon || Clock, { className: "w-8 h-8" })}
+                {React.createElement(getPrayerInfo(nextPrayer.name).icon, { className: "w-8 h-8" })}
               </div>
               <p className="text-sm text-white/80">
                 Dans {formatTimeRemaining(nextPrayer.remaining)}
@@ -322,22 +349,22 @@ export default function PrayerTimes() {
               {nextPrayer && (
                 <div className={cn(
                   "bg-gradient-to-r rounded-3xl p-6 text-white shadow-xl",
-                  PRAYER_INFO[nextPrayer.name]?.color || "from-[#0d9488] to-[#0f766e]"
+                  getPrayerInfo(nextPrayer.name).color
                 )}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white/80 text-sm mb-1">Prochaine prière</p>
                       <h3 className="text-3xl font-bold mb-1">
-                        {PRAYER_INFO[nextPrayer.name]?.nameAr} - {PRAYER_INFO[nextPrayer.name]?.name}
+                        {getPrayerInfo(nextPrayer.name).nameAr} - {getPrayerInfo(nextPrayer.name).name}
                       </h3>
                       <p className="text-xl">{nextPrayer.time}</p>
                       <p className="text-sm mt-2 text-white/80">
-                        📍 {selectedMosque.name}
+                        📍 {selectedMosque?.name}
                       </p>
                     </div>
                     <div className="text-right">
                       <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-2">
-                        {React.createElement(PRAYER_INFO[nextPrayer.name]?.icon || Clock, { className: "w-8 h-8" })}
+                        {React.createElement(getPrayerInfo(nextPrayer.name).icon, { className: "w-8 h-8" })}
                       </div>
                       <p className="text-sm text-white/80">
                         Dans {formatTimeRemaining(nextPrayer.remaining)}

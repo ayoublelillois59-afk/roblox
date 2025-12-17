@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import LoadingScreen from '@/pages/LoadingScreen';
-import { createPageUrl } from "@/utils";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Simulate loading screen only on first load

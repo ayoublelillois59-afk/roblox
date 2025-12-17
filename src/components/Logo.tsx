@@ -1,7 +1,11 @@
-import React from 'react';
 import { cn } from "@/lib/utils";
 
-export default function Logo({ size = "md", showText = true }) {
+interface LogoProps {
+  size?: "sm" | "md" | "lg";
+  showText?: boolean;
+}
+
+export default function Logo({ size = "md", showText = true }: LogoProps) {
   const sizes = {
     sm: { container: "w-8 h-8", text: "text-sm" },
     md: { container: "w-12 h-12", text: "text-lg" },

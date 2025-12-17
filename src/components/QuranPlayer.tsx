@@ -1,9 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Heart } from 'lucide-react';
 import { cn } from "@/lib/utils";
+
+interface QuranPlayerProps {
+  onFavorite?: (surahNumber: number) => void;
+  favorites?: number[];
+}
 
 const RECITERS = [
   { id: "ar.alafasy", name: "Mishary Rashid Alafasy", nameAr: "مشاري راشد العفاسي", country: "Koweït" },
@@ -131,7 +136,7 @@ const SURAHS = [
   { number: 114, name: "An-Nas", nameAr: "الناس", verses: 6 },
 ];
 
-export default function QuranPlayer({ onFavorite, favorites = [] }) {
+export default function QuranPlayer({ onFavorite, favorites = [] }: QuranPlayerProps) {
   const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
   const [selectedSurah, setSelectedSurah] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -141,7 +146,7 @@ export default function QuranPlayer({ onFavorite, favorites = [] }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const audioRef = useRef(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentSurah = SURAHS.find(s => s.number === selectedSurah) || SURAHS[0];
   const currentReciter = RECITERS.find(r => r.id === selectedReciter) || RECITERS[0];
@@ -193,7 +198,7 @@ export default function QuranPlayer({ onFavorite, favorites = [] }) {
   };
 
   const handleEnded = () => {
-    if (isRepeat) {
+    if (isRepeat && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
     } else {
@@ -201,14 +206,14 @@ export default function QuranPlayer({ onFavorite, favorites = [] }) {
     }
   };
 
-  const handleSeek = (value) => {
+  const handleSeek = (value: number[]) => {
     if (audioRef.current) {
       audioRef.current.currentTime = value[0];
       setCurrentTime(value[0]);
     }
   };
 
-  const formatTime = (time) => {
+  const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
     const secs = Math.floor(time % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;

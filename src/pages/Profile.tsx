@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  ArrowLeft, User, Settings, Bell, Globe, Volume2,
-  Download, Info, LogOut, Trash2, Shield
+  ArrowLeft, Settings, Bell, Globe, Volume2,
+  Download, Info, LogOut, Trash2
 } from 'lucide-react';
 import { createPageUrl } from "@/utils";
 // Firebase auth will be configured later

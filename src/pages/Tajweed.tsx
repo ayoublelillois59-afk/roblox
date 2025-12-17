@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  ArrowLeft, Mic, Square, Loader2, Volume2, CheckCircle2,
+  ArrowLeft, Mic, Square, Loader2, CheckCircle2,
   AlertCircle, BookOpen, Info, Sparkles, ChevronRight
 } from 'lucide-react';
 import { createPageUrl } from "@/utils";
