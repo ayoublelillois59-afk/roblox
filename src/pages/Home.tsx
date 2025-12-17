@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   BookOpen, Clock, Mic, GraduationCap, Heart, Hash, Star,
-  Users, Sparkles, Award, ChevronRight, Volume2, Compass,
+  Users, Sparkles, Award, Volume2, Compass,
   Sun, Sunrise, Sunset, Moon, User
 } from 'lucide-react';
 import { createPageUrl } from "@/utils";
@@ -264,14 +264,28 @@ export default function HomePage() {
   const PrayerIcon = getPrayerIcon();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
-      {/* Header Professionnel */}
-      <div className="bg-gradient-to-r from-[#0d9488] via-teal-600 to-emerald-600 text-white shadow-lg">
+    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-emerald-800 to-teal-900 relative overflow-hidden">
+      {/* Fond décoratif islamique */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-10 right-10 text-[200px] text-white/30 font-arabic">☪</div>
+        <div className="absolute bottom-20 left-10 text-[150px] text-white/30 font-arabic">🕌</div>
+        <div className="absolute top-1/3 left-1/4 text-[180px] text-white/30 font-arabic rotate-12">✨</div>
+        <div className="absolute top-2/3 right-1/4 text-[120px] text-white/30 font-arabic">⭐</div>
+      </div>
+
+      {/* Pattern géométrique islamique */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px)`
+      }}></div>
+
+      <div className="relative z-10 pb-24">
+        {/* Header Professionnel */}
+        <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-600 text-white shadow-2xl backdrop-blur-sm bg-opacity-95">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Heure et Prochaine Prière */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3">
+              <div className="flex items-center gap-3 bg-white/15 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg border border-white/20">
                 <Clock className="w-7 h-7" />
                 <div>
                   <p className="text-2xl font-bold tracking-wide">
@@ -284,7 +298,7 @@ export default function HomePage() {
               </div>
 
               {nextPrayer && (
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-2xl px-5 py-3">
+                <div className="flex items-center gap-3 bg-white/15 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg border border-white/20">
                   <div className="bg-white/20 rounded-full p-2">
                     <PrayerIcon className="w-6 h-6" />
                   </div>
@@ -299,7 +313,7 @@ export default function HomePage() {
 
             {/* Profile */}
             <Link to={createPageUrl('Profile')}>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-3 hover:bg-white/20 transition-all">
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-3 hover:bg-white/25 transition-all shadow-lg border border-white/20">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5" />
                 </div>
@@ -312,10 +326,10 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Verset du Jour */}
-        <Card className="mb-6 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-amber-200 shadow-md">
+        <Card className="mb-6 bg-white/95 backdrop-blur-md border-2 border-amber-200 shadow-2xl">
           <CardContent className="p-5">
             <div className="flex items-start gap-3">
-              <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-2.5 shadow-md">
+              <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-2.5 shadow-lg">
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -335,20 +349,18 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Blocs Principaux - Compacts et Professionnels avec images de fond */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {/* Blocs Principaux avec belles images */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Link to={createPageUrl('Quran')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-emerald-300 overflow-hidden h-full relative">
-              {/* Fond avec motif Coran */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-95"></div>
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] font-arabic leading-none">
-                  القرآن
-                </div>
+            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-emerald-200 hover:border-emerald-400">
+              {/* Image de fond Coran */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-800">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
+                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 font-arabic leading-none">📖</div>
               </div>
-              <CardContent className="p-4 relative z-10">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
+              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -356,7 +368,7 @@ export default function HomePage() {
                     <p className="text-xl font-arabic">القرآن</p>
                   </div>
                 </div>
-                <div className="text-xs text-white/90 space-y-1 mt-3">
+                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
                   <p className="flex items-center gap-1.5">
                     <Volume2 className="w-3.5 h-3.5" /> Lire & écouter
                   </p>
@@ -369,17 +381,15 @@ export default function HomePage() {
           </Link>
 
           <Link to={createPageUrl('Prayer')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-300 overflow-hidden h-full relative">
-              {/* Fond avec motif Prière */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-95"></div>
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] font-arabic leading-none">
-                  🕌
-                </div>
+            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-purple-200 hover:border-purple-400">
+              {/* Image de fond Prière */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-indigo-700 to-purple-800">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQyIiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxjaXJjbGUgY3g9IjMwIiBjeT0iMzAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZDIpIi8+PC9zdmc+')] opacity-30"></div>
+                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 leading-none">🕌</div>
               </div>
-              <CardContent className="p-4 relative z-10">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
+              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -387,7 +397,7 @@ export default function HomePage() {
                     <p className="text-xl font-arabic">الصلاة</p>
                   </div>
                 </div>
-                <div className="text-xs text-white/90 space-y-1 mt-3">
+                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
                   <p className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" /> Horaires précis
                   </p>
@@ -400,17 +410,15 @@ export default function HomePage() {
           </Link>
 
           <Link to={createPageUrl('Tajweed')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-300 overflow-hidden h-full relative">
-              {/* Fond avec motif Tajweed */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-600 opacity-95"></div>
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] font-arabic leading-none">
-                  التجويد
-                </div>
+            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-blue-200 hover:border-blue-400">
+              {/* Image de fond Tajweed */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-cyan-700 to-blue-800">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQzIiB3aWR0aD0iODAiIGhlaWdodD0iODAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gMCAwIEwgODAgMCBMIDgwIDgwIEwgMCA4MCBaIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4wOCIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkMykiLz48L3N2Zz4=')] opacity-20"></div>
+                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 leading-none">🎤</div>
               </div>
-              <CardContent className="p-4 relative z-10">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
+              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
                     <Mic className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -418,7 +426,7 @@ export default function HomePage() {
                     <p className="text-xl font-arabic">التجويد</p>
                   </div>
                 </div>
-                <div className="text-xs text-white/90 space-y-1 mt-3">
+                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
                   <p className="flex items-center gap-1.5">
                     <Award className="w-3.5 h-3.5" /> Correction IA
                   </p>
@@ -431,17 +439,15 @@ export default function HomePage() {
           </Link>
 
           <Link to={createPageUrl('Learn')}>
-            <Card className="group hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-pink-300 overflow-hidden h-full relative">
-              {/* Fond avec motif Apprentissage */}
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-rose-600 opacity-95"></div>
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30 text-[120px] leading-none">
-                  📚
-                </div>
+            <Card className="group hover:shadow-2xl transition-all duration-300 overflow-hidden h-full relative border-2 border-pink-200 hover:border-pink-400">
+              {/* Image de fond Apprendre */}
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-600 via-rose-700 to-pink-800">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9Imdyawq0IiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gMzAgMCBMIDMwIDYwIE0gMCAzMCBMIDYwIDMwIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4wNSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkNCkiLz48L3N2Zz4=')] opacity-20"></div>
+                <div className="absolute bottom-0 right-0 text-[120px] text-white/10 leading-none">🎓</div>
               </div>
-              <CardContent className="p-4 relative z-10">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-xl p-2.5 group-hover:scale-110 transition-transform backdrop-blur-sm">
+              <CardContent className="p-5 relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white/25 backdrop-blur-sm rounded-xl p-2.5 group-hover:scale-110 transition-transform shadow-lg">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white">
@@ -449,7 +455,7 @@ export default function HomePage() {
                     <p className="text-xl font-arabic">العلم</p>
                   </div>
                 </div>
-                <div className="text-xs text-white/90 space-y-1 mt-3">
+                <div className="text-xs text-white/95 space-y-1.5 bg-black/20 backdrop-blur-sm rounded-lg p-2.5">
                   <p className="flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5" /> Coran & Arabe
                   </p>
@@ -460,55 +466,6 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </Link>
-        </div>
-
-        {/* Grandes Figures de l'Islam - Carrousel Horizontal */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg p-2">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">Grandes Figures de l'Islam</h2>
-            </div>
-            <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-none">
-              Sources Authentiques
-            </Badge>
-          </div>
-
-          {/* Carrousel */}
-          <div className="relative">
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-teal-500 scrollbar-track-gray-200">
-              {ISLAMIC_FIGURES.map((figure) => (
-                <Card
-                  key={figure.id}
-                  className="flex-shrink-0 w-72 cursor-pointer hover:shadow-2xl transition-all duration-300 group border-2 hover:border-teal-400"
-                  onClick={() => setSelectedFigure(figure)}
-                >
-                  <div className={`h-32 bg-gradient-to-br ${figure.gradient} relative overflow-hidden`}>
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-all"></div>
-                    <div className="absolute bottom-3 left-4 right-4">
-                      <p className="text-white text-sm font-medium mb-1">{figure.category}</p>
-                      <h3 className="text-white font-bold text-lg drop-shadow-lg">{figure.name}</h3>
-                      <p className="text-white/90 text-2xl font-arabic mt-1">{figure.arabic}</p>
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <Badge className="mb-2 bg-teal-100 text-teal-700 border-none text-xs">
-                      {figure.title}
-                    </Badge>
-                    <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-                      {figure.description}
-                    </p>
-                    <div className="mt-3 flex items-center justify-between">
-                      <p className="text-xs text-teal-600 font-medium">Lire l'histoire complète</p>
-                      <ChevronRight className="w-4 h-4 text-teal-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Petits Blocs - Ligne Compacte */}
@@ -556,33 +513,103 @@ export default function HomePage() {
           </Link>
         </div>
 
+        {/* Grandes Figures de l'Islam - Carrousel d'Images Circulaires */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-2.5 shadow-lg">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white drop-shadow-lg">Grandes Figures de l'Islam</h2>
+                <p className="text-sm text-white/80">Cliquez pour découvrir leur histoire</p>
+              </div>
+            </div>
+            <Badge className="bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg">
+              <Award className="w-3 h-3 mr-1" />
+              Sources Authentiques
+            </Badge>
+          </div>
+
+          {/* Carrousel d'images circulaires */}
+          <div className="relative">
+            <div className="flex gap-6 overflow-x-auto pb-4 px-2 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10">
+              {ISLAMIC_FIGURES.map((figure) => (
+                <div
+                  key={figure.id}
+                  className="flex-shrink-0 cursor-pointer group"
+                  onClick={() => setSelectedFigure(figure)}
+                >
+                  <div className="relative">
+                    {/* Image circulaire avec gradient */}
+                    <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${figure.gradient} shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110 relative overflow-hidden border-4 border-white/30`}>
+                      {/* Pattern décoratif */}
+                      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9InN0YXJzIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjc3RhcnMpIi8+PC9zdmc+')] opacity-40"></div>
+
+                      {/* Icône centrale basée sur la catégorie */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {figure.category === 'Prophète' && (
+                          <div className="text-5xl drop-shadow-lg">⭐</div>
+                        )}
+                        {figure.category === 'Compagnon' && (
+                          <div className="text-5xl drop-shadow-lg">✨</div>
+                        )}
+                        {figure.category === 'Héros' && (
+                          <div className="text-5xl drop-shadow-lg">🗡️</div>
+                        )}
+                        {figure.category === 'Savant' && (
+                          <div className="text-5xl drop-shadow-lg">📚</div>
+                        )}
+                      </div>
+
+                      {/* Badge catégorie en haut */}
+                      <div className="absolute -top-1 -right-1 bg-white rounded-full px-2 py-0.5 shadow-md">
+                        <span className="text-[10px] font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                          {figure.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Nom en arabe sous l'image (très petit) */}
+                    <div className="mt-2 text-center">
+                      <p className="text-sm font-arabic text-white/90 drop-shadow">
+                        {figure.arabic}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Footer - Sources Authentiques */}
-        <Card className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-200 shadow-md">
+        <Card className="bg-white/95 backdrop-blur-md border-2 border-white/30 shadow-2xl">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-3 shadow-md">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-3 shadow-lg">
                 <Award className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-emerald-900 text-xl mb-2 flex items-center gap-2">
+                <h3 className="font-bold text-gray-900 text-xl mb-2 flex items-center gap-2">
                   Sources Vérifiées et Authentiques
-                  <Sparkles className="w-5 h-5 text-emerald-600" />
+                  <Sparkles className="w-5 h-5 text-amber-600" />
                 </h3>
-                <p className="text-sm text-emerald-800 leading-relaxed mb-3">
+                <p className="text-sm text-gray-700 leading-relaxed mb-3">
                   <strong>Notre engagement :</strong> Toutes les informations présentes dans cette application proviennent
                   exclusivement de sources authentiques et vérifiées. Nous ne publions que la vérité selon les textes authentiques de l'Islam.
                 </p>
                 <div className="flex flex-wrap gap-3 text-xs">
-                  <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1.5 rounded-full text-emerald-700 font-medium">
+                  <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1.5 rounded-full text-emerald-700 font-medium shadow-sm">
                     <BookOpen className="w-3.5 h-3.5" /> Le Saint Coran
                   </span>
-                  <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1.5 rounded-full text-emerald-700 font-medium">
+                  <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1.5 rounded-full text-emerald-700 font-medium shadow-sm">
                     <Award className="w-3.5 h-3.5" /> Sahih Bukhari & Muslim
                   </span>
-                  <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1.5 rounded-full text-emerald-700 font-medium">
+                  <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1.5 rounded-full text-emerald-700 font-medium shadow-sm">
                     <Users className="w-3.5 h-3.5" /> Savants reconnus
                   </span>
-                  <span className="flex items-center gap-1.5 bg-white/60 px-3 py-1.5 rounded-full text-emerald-700 font-medium">
+                  <span className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1.5 rounded-full text-emerald-700 font-medium shadow-sm">
                     <Sparkles className="w-3.5 h-3.5" /> Textes authentifiés
                   </span>
                 </div>
@@ -590,6 +617,7 @@ export default function HomePage() {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
 
       {/* Modal Histoire Complète */}
