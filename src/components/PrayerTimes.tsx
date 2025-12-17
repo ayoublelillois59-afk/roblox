@@ -25,15 +25,21 @@ const CALCULATION_METHODS = [
   { id: 12, name: "Union des Organisations Islamiques de France" },
 ];
 
+interface NextPrayer {
+  name: string;
+  time: string;
+  remaining: number | null;
+}
+
 export default function PrayerTimes() {
-  const [prayerTimes, setPrayerTimes] = useState(null);
+  const [prayerTimes, setPrayerTimes] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [location, setLocation] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<any>(null);
   const [method, setMethod] = useState("12");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [nextPrayer, setNextPrayer] = useState(null);
-  const [selectedMosque, setSelectedMosque] = useState(null);
+  const [nextPrayer, setNextPrayer] = useState<NextPrayer | null>(null);
+  const [selectedMosque, setSelectedMosque] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("auto");
 
   useEffect(() => {

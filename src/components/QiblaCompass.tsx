@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Compass, MapPin, RefreshCw, Navigation } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { Compass, MapPin, RefreshCw } from 'lucide-react';
 
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
