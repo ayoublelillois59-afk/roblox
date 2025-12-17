@@ -3,9 +3,14 @@ export function createPageUrl(pageName: string): string {
     'Home': '/',
     'Adhkar': '/adhkar',
     'Dhikr': '/dhikr',
+    'Learn': '/learn',
+    'Names': '/names',
+    'Prayer': '/prayer',
+    'Premium': '/premium',
     'Qibla': '/qibla',
     'Quran': '/quran',
-    'PrayerTimes': '/prayer-times',
+    'Settings': '/settings',
+    'Tajweed': '/tajweed',
   };
 
   return routes[pageName] || '/';
