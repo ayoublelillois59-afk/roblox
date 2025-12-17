@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Clock, GraduationCap, Settings } from 'lucide-react';
+import { Home, BookOpen, Clock, GraduationCap, Mic } from 'lucide-react';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { id: 'settings', label: 'Réglages', icon: Settings, page: 'Settings' },
   { id: 'home', label: 'Accueil', icon: Home, page: 'Home' },
-  { id: 'quran', label: 'Coran', icon: BookOpen, page: 'Quran' },
   { id: 'prayer', label: 'Prière', icon: Clock, page: 'Prayer' },
+  { id: 'quran', label: 'Coran', icon: BookOpen, page: 'Quran' },
+  { id: 'tajweed', label: 'Réciter', icon: Mic, page: 'Tajweed' },
   { id: 'learn', label: 'Apprendre', icon: GraduationCap, page: 'Learn' },
 ];
 

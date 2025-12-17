@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem } from "@/components/ui/select";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Heart } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -258,17 +258,11 @@ export default function QuranPlayer({ onFavorite, favorites = [] }: QuranPlayerP
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div>
           <label className="text-sm text-emerald-200 mb-2 block">Récitateur</label>
-          <Select value={selectedReciter} onValueChange={setSelectedReciter}>
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={selectedReciter} onValueChange={setSelectedReciter} className="bg-white border-gray-200 text-gray-900">
             <SelectContent>
               {RECITERS.map(reciter => (
-                <SelectItem key={reciter.id} value={reciter.id}>
-                  <div className="flex items-center gap-2">
-                    <span>{reciter.name}</span>
-                    <span className="text-gray-500 text-sm">({reciter.country})</span>
-                  </div>
+                <SelectItem key={reciter.id} value={reciter.id} className="text-gray-900 bg-white">
+                  {reciter.name} ({reciter.country})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -276,13 +270,10 @@ export default function QuranPlayer({ onFavorite, favorites = [] }: QuranPlayerP
         </div>
         <div>
           <label className="text-sm text-emerald-200 mb-2 block">Sourate</label>
-          <Select value={String(selectedSurah)} onValueChange={(v) => setSelectedSurah(Number(v))}>
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={String(selectedSurah)} onValueChange={(v) => setSelectedSurah(Number(v))} className="bg-white border-gray-200 text-gray-900">
             <SelectContent>
               {SURAHS.map(surah => (
-                <SelectItem key={surah.number} value={String(surah.number)}>
+                <SelectItem key={surah.number} value={String(surah.number)} className="text-gray-900 bg-white">
                   {surah.number}. {surah.name} - {surah.nameAr}
                 </SelectItem>
               ))}
