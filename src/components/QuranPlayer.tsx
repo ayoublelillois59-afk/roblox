@@ -148,7 +148,7 @@ export default function QuranPlayer({ onFavorite, favorites = [] }) {
   const isFavorite = favorites.includes(selectedSurah);
 
   const getAudioUrl = () => {
-    return \`https://cdn.islamic.network/quran/audio-surah/128/\${selectedReciter}/\${selectedSurah}.mp3\`;
+    return `https://cdn.islamic.network/quran/audio-surah/128/${selectedReciter}/${selectedSurah}.mp3`;
   };
 
   useEffect(() => {
@@ -211,7 +211,7 @@ export default function QuranPlayer({ onFavorite, favorites = [] }) {
   const formatTime = (time) => {
     const mins = Math.floor(time / 60);
     const secs = Math.floor(time % 60);
-    return \`\${mins}:\${secs.toString().padStart(2, '0')}\`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const nextSurah = () => {

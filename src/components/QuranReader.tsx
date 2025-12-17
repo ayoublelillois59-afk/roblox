@@ -37,7 +37,7 @@ const SURAHS = Array.from({ length: 114 }, (_, i) => {
     { name: "Ta-Ha", nameAr: "طه", verses: 135 },
     // ... We would add all 114 surahs here
   ];
-  return { number: i + 1, ...(surahNames[i] || { name: \`Sourate \${i + 1}\`, nameAr: \`سورة \${i + 1}\`, verses: 0 }) };
+  return { number: i + 1, ...(surahNames[i] || { name: `Sourate ${i + 1}`, nameAr: `سورة ${i + 1}`, verses: 0 }) };
 });
 
 export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
@@ -57,7 +57,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
   useEffect(() => {
     if (initialVerse && surahData) {
       setTimeout(() => {
-        const element = document.getElementById(\`verse-\${initialVerse}\`);
+        const element = document.getElementById(`verse-\${initialVerse}`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           element.classList.add('highlight-verse');
@@ -71,8 +71,8 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
     setLoading(true);
     try {
       const [arabicRes, translationRes] = await Promise.all([
-        fetch(\`https://api.alquran.cloud/v1/surah/\${selectedSurah}\`),
-        fetch(\`https://api.alquran.cloud/v1/surah/\${selectedSurah}/fr.hamidullah\`)
+        fetch(`https://api.alquran.cloud/v1/surah/\${selectedSurah}`),
+        fetch(`https://api.alquran.cloud/v1/surah/\${selectedSurah}/fr.hamidullah`)
       ]);
 
       const arabicData = await arabicRes.json();
@@ -106,8 +106,8 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
     try {
       // Tafsir en arabe et français
       const responses = await Promise.all([
-        fetch(\`https://api.quran.com/api/v4/quran/tafsirs/93?verse_key=\${surahNumber}:\${verseNumber}\`), // Tafsir Al-Muyassar (arabe)
-        fetch(\`https://api.quran.com/api/v4/quran/tafsirs/171?verse_key=\${surahNumber}:\${verseNumber}\`) // Tafsir français si dispo
+        fetch(`https://api.quran.com/api/v4/quran/tafsirs/93?verse_key=\${surahNumber}:\${verseNumber}`), // Tafsir Al-Muyassar (arabe)
+        fetch(`https://api.quran.com/api/v4/quran/tafsirs/171?verse_key=\${surahNumber}:\${verseNumber}`) // Tafsir français si dispo
       ]);
 
       const [arabicData, frenchData] = await Promise.all(responses.map(r => r.json()));
@@ -236,7 +236,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
           {surahData.arabic.map((verse, index) => (
             <Card
               key={verse.number}
-              id={\`verse-\${verse.numberInSurah}\`}
+              id={`verse-\${verse.numberInSurah}`}
               className="hover:shadow-lg transition-all scroll-mt-24"
             >
               <CardContent className="p-6">
@@ -346,7 +346,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
         </CardContent>
       </Card>
 
-      <style jsx>{\`
+      <style jsx>{`
         .highlight-verse {
           animation: highlight 3s ease-out;
         }
@@ -359,7 +359,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
             background-color: rgba(13, 148, 136, 0.1);
           }
         }
-      \`}</style>
+      `}</style>
     </div>
   );
 }
