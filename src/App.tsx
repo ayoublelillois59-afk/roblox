@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Layout from './layouts/Layout';
 import HomePage from './pages/Home';
 import AdhkarPage from './pages/Adhkar';
 import DhikrPage from './pages/Dhikr';
@@ -16,21 +17,23 @@ import LoadingScreen from './pages/LoadingScreen';
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/adhkar" element={<AdhkarPage />} />
-        <Route path="/dhikr" element={<DhikrPage />} />
-        <Route path="/learn" element={<LearnPage />} />
-        <Route path="/names" element={<NamesPage />} />
-        <Route path="/prayer" element={<PrayerPage />} />
-        <Route path="/premium" element={<PremiumPage />} />
-        <Route path="/qibla" element={<QiblaPage />} />
-        <Route path="/quran" element={<QuranPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/tajweed" element={<TajweedPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/loading" element={<LoadingScreen />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/adhkar" element={<AdhkarPage />} />
+          <Route path="/dhikr" element={<DhikrPage />} />
+          <Route path="/learn" element={<LearnPage />} />
+          <Route path="/names" element={<NamesPage />} />
+          <Route path="/prayer" element={<PrayerPage />} />
+          <Route path="/premium" element={<PremiumPage />} />
+          <Route path="/qibla" element={<QiblaPage />} />
+          <Route path="/quran" element={<QuranPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/tajweed" element={<TajweedPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/loading" element={<LoadingScreen />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }
