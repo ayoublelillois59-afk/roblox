@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,7 +176,7 @@ const ARABIC_SPEAKING_PROGRAM = {
 };
 
 export default function PremiumPage() {
-  const [expandedProgram, setExpandedProgram] = React.useState<string | null>(null);
+  const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0d9488]/5 via-white to-[#0d9488]/5 pb-24">

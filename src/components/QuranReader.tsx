@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, Loader2, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
-import { cn } from "@/lib/utils";
+
+interface Ayah {
+  number: number;
+  text: string;
+  numberInSurah: number;
+}
+
+interface SurahData {
+  arabic: Ayah[];
+  translation: Ayah[];
+}
+
+interface TafsirData {
+  surah: number;
+  verse: number;
+  arabic: string;
+  french: string;
+  source: string;
+}
 
 // Toutes les 114 sourates
 const SURAHS = Array.from({ length: 114 }, (_, i) => {
@@ -40,12 +58,17 @@ const SURAHS = Array.from({ length: 114 }, (_, i) => {
   return { number: i + 1, ...(surahNames[i] || { name: `Sourate ${i + 1}`, nameAr: `سورة ${i + 1}`, verses: 0 }) };
 });
 
-export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
+interface QuranReaderProps {
+  initialSurah?: number;
+  initialVerse?: number | null;
+}
+
+export default function QuranReader({ initialSurah = 1, initialVerse = null }: QuranReaderProps) {
   const [selectedSurah, setSelectedSurah] = useState(initialSurah);
-  const [surahData, setSurahData] = useState(null);
+  const [surahData, setSurahData] = useState<SurahData | null>(null);
   const [loading, setLoading] = useState(false);
   const [showTranslation, setShowTranslation] = useState(true);
-  const [selectedVerseTafsir, setSelectedVerseTafsir] = useState(null);
+  const [selectedVerseTafsir, setSelectedVerseTafsir] = useState<TafsirData | null>(null);
   const [loadingTafsir, setLoadingTafsir] = useState(false);
 
   const currentSurah = SURAHS.find(s => s.number === selectedSurah) || SURAHS[0];
@@ -71,8 +94,8 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
     setLoading(true);
     try {
       const [arabicRes, translationRes] = await Promise.all([
-        fetch(`https://api.alquran.cloud/v1/surah/\${selectedSurah}`),
-        fetch(`https://api.alquran.cloud/v1/surah/\${selectedSurah}/fr.hamidullah`)
+        fetch(`https://api.alquran.cloud/v1/surah/${selectedSurah}`),
+        fetch(`https://api.alquran.cloud/v1/surah/${selectedSurah}/fr.hamidullah`)
       ]);
 
       const arabicData = await arabicRes.json();
@@ -101,7 +124,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }) {
     }
   };
 
-  const fetchVerseTafsir = async (surahNumber, verseNumber) => {
+  const fetchVerseTafsir = async (surahNumber: number, verseNumber: number) => {
     setLoadingTafsir(true);
     try {
       // Tafsir en arabe et français

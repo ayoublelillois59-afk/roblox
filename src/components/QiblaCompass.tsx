@@ -5,15 +5,20 @@ import { Compass, MapPin, RefreshCw } from 'lucide-react';
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
 
+interface Location {
+  lat: number;
+  lng: number;
+}
+
 export default function QiblaCompass() {
-  const [qiblaDirection, setQiblaDirection] = useState(null);
+  const [qiblaDirection, setQiblaDirection] = useState<number | null>(null);
   const [deviceHeading, setDeviceHeading] = useState(0);
-  const [location, setLocation] = useState(null);
-  const [error, setError] = useState(null);
+  const [location, setLocation] = useState<Location | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
 
-  const calculateQiblaDirection = (lat, lng) => {
+  const calculateQiblaDirection = (lat: number, lng: number) => {
     const lat1 = (lat * Math.PI) / 180;
     const lat2 = (KAABA_LAT * Math.PI) / 180;
     const lngDiff = ((KAABA_LNG - lng) * Math.PI) / 180;
@@ -45,7 +50,7 @@ export default function QiblaCompass() {
         setQiblaDirection(direction);
         setLoading(false);
       },
-      (err) => {
+      () => {
         setError("Impossible d'obtenir votre position. Veuillez autoriser la géolocalisation.");
         setLoading(false);
       },
@@ -70,7 +75,7 @@ export default function QiblaCompass() {
   };
 
   useEffect(() => {
-    const handleOrientation = (event) => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
       if (event.alpha !== null) {
         setDeviceHeading(event.alpha);
       }

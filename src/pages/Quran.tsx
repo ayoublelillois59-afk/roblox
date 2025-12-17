@@ -11,7 +11,8 @@ export default function QuranPage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialSurah = parseInt(queryParams.get('surah') || '') || 1;
-  const initialVerse = parseInt(queryParams.get('verse') || '') || null;
+  const verseParam = parseInt(queryParams.get('verse') || '');
+  const initialVerse = isNaN(verseParam) ? null : verseParam;
   const initialTab = queryParams.get('tab') || 'listen';
 
   const [favorites, setFavorites] = useState<number[]>([]);
