@@ -271,7 +271,7 @@ export default function PrayerTimes() {
       <div className="flex items-center gap-4">
         <Select value={method} onValueChange={setMethod}>
           <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Méthode de calcul" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {CALCULATION_METHODS.map(m => (
@@ -339,7 +339,7 @@ export default function PrayerTimes() {
 
         <TabsContent value="mosque" className="space-y-6 mt-6">
           <MosqueSelector
-            selectedMosqueId={selectedMosque?.id}
+            selectedMosqueId={selectedMosque?.id || null}
             onSelectMosque={handleMosqueSelect}
           />
 

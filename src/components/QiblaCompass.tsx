@@ -60,9 +60,9 @@ export default function QiblaCompass() {
 
   const requestDeviceOrientation = async () => {
     if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
+        typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
       try {
-        const permission = await DeviceOrientationEvent.requestPermission();
+        const permission = await (DeviceOrientationEvent as any).requestPermission();
         if (permission === 'granted') {
           setPermissionGranted(true);
         }
@@ -201,7 +201,7 @@ export default function QiblaCompass() {
             <div className="bg-gray-50 rounded-2xl p-4 text-center">
               <p className="text-sm text-gray-500 mb-1">Distance</p>
               <p className="text-2xl font-bold text-emerald-700">
-                {getDistanceToMecca() ? `${getDistanceToMecca().toLocaleString()} km` : '--'}
+                {getDistanceToMecca() ? `${getDistanceToMecca()!.toLocaleString()} km` : '--'}
               </p>
             </div>
           </div>

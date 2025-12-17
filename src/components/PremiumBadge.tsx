@@ -6,7 +6,7 @@ interface PremiumBadgeProps {
   className?: string;
 }
 
-export default function PremiumBadge({ size = "sm", className }: PremiumBadgeProps) {
+export default function PremiumBadge({ size = "sm", className = "" }: PremiumBadgeProps) {
   return (
     <div className={cn(
       "inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-semibold",

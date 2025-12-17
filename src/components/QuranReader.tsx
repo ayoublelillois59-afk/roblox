@@ -210,7 +210,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }: Q
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="max-h-64">
+            <SelectContent>
               {SURAHS.map(surah => (
                 <SelectItem key={surah.number} value={String(surah.number)}>
                   {surah.number}. {surah.name} - {surah.nameAr}
@@ -369,7 +369,7 @@ export default function QuranReader({ initialSurah = 1, initialVerse = null }: Q
         </CardContent>
       </Card>
 
-      <style jsx>{`
+      <style>{`
         .highlight-verse {
           animation: highlight 3s ease-out;
         }

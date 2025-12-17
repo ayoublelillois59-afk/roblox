@@ -280,7 +280,7 @@ export default function QuranPlayer({ onFavorite, favorites = [] }: QuranPlayerP
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="max-h-64">
+            <SelectContent>
               {SURAHS.map(surah => (
                 <SelectItem key={surah.number} value={String(surah.number)}>
                   {surah.number}. {surah.name} - {surah.nameAr}
