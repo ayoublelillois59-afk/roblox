@@ -1,21 +1,20 @@
 /**
- * Service OpenAI pour la transcription audio (Whisper) et l'analyse de Tajweed (GPT-4)
- *
- * IMPORTANT: Pour utiliser ce service, vous devez:
- * 1. Créer un compte OpenAI sur https://platform.openai.com/
- * 2. Générer une clé API
- * 3. Ajouter la clé dans les variables d'environnement ou directement ici (non recommandé pour production)
+ * Service OpenAI pour Transcription (Whisper) et Analyse Tajweed (GPT-4)
+ * Build: 2025-12-18T14:00
  */
 
-// CONFIGURATION
-// Chargement depuis .env ou .env.local
+// Configuration depuis variables d'environnement Vercel
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
 
-// Debug: vérifier si la clé est chargée
-console.log('🔑 Configuration OpenAI:');
-console.log('  - Clé chargée depuis .env:', OPENAI_API_KEY ? `Oui (${OPENAI_API_KEY.substring(0, 20)}...)` : 'Non - Variable VITE_OPENAI_API_KEY non trouvée');
-console.log('  - Longueur de la clé:', OPENAI_API_KEY.length);
-console.log('  - Toutes les variables VITE_*:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
+// Logs de vérification
+console.log('═══════════════════════════════════════════════════');
+console.log('🚀 Muslim Pro App - OpenAI Service');
+console.log('📅 Build: 2025-12-18T14:00');
+console.log('🔑 API Key:', OPENAI_API_KEY ? `✅ Configurée (${OPENAI_API_KEY.length} chars)` : '❌ NON CONFIGURÉE');
+if (OPENAI_API_KEY) {
+  console.log('   Début:', OPENAI_API_KEY.substring(0, 20) + '...');
+}
+console.log('═══════════════════════════════════════════════════');
 
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 /**
