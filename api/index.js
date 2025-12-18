@@ -1,36 +1,31 @@
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const FormData = require('form-data');
-const fetch = require('node-fetch');
-const dotenv = require('dotenv');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import FormData from 'form-data';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-// Charger les variables d'environnement depuis le fichier .env.local du projet parent
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-  console.log('✅ Fichier .env.local chargé depuis:', envPath);
-} else {
-  console.error('❌ Fichier .env.local introuvable!');
-  process.exit(1);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Charger les variables d'environnement
+dotenv.config();
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
-// Configuration
-const OPENAI_API_KEY = process.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+// Configuration OpenAI
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 
 if (!OPENAI_API_KEY) {
-  console.error('❌ ERREUR: Clé API OpenAI non trouvée dans .env.local');
+  console.error('❌ ERREUR: OPENAI_API_KEY non configurée dans .env');
   process.exit(1);
 }
 
-console.log('🔑 Clé API OpenAI chargée:', OPENAI_API_KEY.substring(0, 20) + '...');
-console.log('📝 Longueur de la clé:', OPENAI_API_KEY.length);
+console.log('✅ Clé API OpenAI chargée:', OPENAI_API_KEY.substring(0, 20) + '...');
 
 // Middleware
 app.use(cors());
@@ -40,6 +35,16 @@ app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024 } // 25MB max
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    service: 'Muslim Pro API',
+    timestamp: new Date().toISOString(),
+    apiConfigured: !!OPENAI_API_KEY
+  });
 });
 
 // Endpoint: Transcription audio avec Whisper
@@ -55,10 +60,12 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     const formData = new FormData();
     formData.append('file', req.file.buffer, {
       filename: 'recording.webm',
-      contentType: req.file.mimetype
+      contentType: req.file.mimetype || 'audio/webm',
+      knownLength: req.file.size
     });
     formData.append('model', 'whisper-1');
     formData.append('language', 'ar');
+    formData.append('response_format', 'verbose_json');
 
     // Appeler l'API Whisper
     const response = await fetch(`${OPENAI_API_URL}/audio/transcriptions`, {
@@ -73,21 +80,27 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     if (!response.ok) {
       const error = await response.text();
       console.error('❌ Erreur Whisper:', error);
-      return res.status(response.status).json({ error: 'Erreur lors de la transcription' });
+      return res.status(response.status).json({
+        error: 'Erreur lors de la transcription',
+        details: error
+      });
     }
 
     const result = await response.json();
-    console.log('✅ Transcription réussie:', result.text.substring(0, 50) + '...');
+    console.log('✅ Transcription réussie:', result.text?.substring(0, 50) + '...');
 
     res.json({
       text: result.text,
-      language: 'ar',
+      language: result.language || 'ar',
       duration: result.duration || 0
     });
 
   } catch (error) {
     console.error('❌ Erreur serveur:', error);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    res.status(500).json({
+      error: 'Erreur interne du serveur',
+      message: error.message
+    });
   }
 });
 
@@ -96,7 +109,7 @@ app.post('/api/analyze-tajweed', async (req, res) => {
   try {
     console.log('🎯 Requête d\'analyse Tajweed reçue');
 
-    const { arabicText, verseInfo } = req.body;
+    const { arabicText } = req.body;
 
     if (!arabicText) {
       return res.status(400).json({ error: 'Texte arabe manquant' });
@@ -123,8 +136,6 @@ RÈGLES STRICTES :
 
     const userPrompt = `Voici le texte arabe récité :
 ${arabicText}
-
-${verseInfo ? `Verset : ${verseInfo.surahName} (${verseInfo.surahNumber}:${verseInfo.verseNumber})` : ''}
 
 Analyse cette récitation et fournis :
 1. Les règles correctement appliquées
@@ -179,7 +190,10 @@ Réponds UNIQUEMENT en JSON valide selon ce format :
     if (!response.ok) {
       const error = await response.text();
       console.error('❌ Erreur GPT-4:', error);
-      return res.status(response.status).json({ error: 'Erreur lors de l\'analyse' });
+      return res.status(response.status).json({
+        error: 'Erreur lors de l\'analyse',
+        details: error
+      });
     }
 
     const result = await response.json();
@@ -190,32 +204,26 @@ Réponds UNIQUEMENT en JSON valide selon ce format :
 
   } catch (error) {
     console.error('❌ Erreur serveur:', error);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    res.status(500).json({
+      error: 'Erreur interne du serveur',
+      message: error.message
+    });
   }
-});
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    apiKeyConfigured: !!OPENAI_API_KEY,
-    apiKeyLength: OPENAI_API_KEY?.length || 0
-  });
 });
 
 // Démarrer le serveur
 app.listen(PORT, () => {
   console.log('');
-  console.log('═══════════════════════════════════════════════');
-  console.log('🚀 Serveur Muslim Pro Backend démarré!');
-  console.log('═══════════════════════════════════════════════');
+  console.log('════════════════════════════════════════════════════════');
+  console.log('🚀 Muslim Pro API Backend démarré!');
+  console.log('════════════════════════════════════════════════════════');
   console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`🔑 Clé API: ${OPENAI_API_KEY ? '✅ Configurée' : '❌ Manquante'}`);
+  console.log(`🔑 OpenAI: ${OPENAI_API_KEY ? '✅ Configurée' : '❌ Manquante'}`);
   console.log('');
   console.log('Endpoints disponibles:');
   console.log(`  POST http://localhost:${PORT}/api/transcribe`);
   console.log(`  POST http://localhost:${PORT}/api/analyze-tajweed`);
   console.log(`  GET  http://localhost:${PORT}/health`);
-  console.log('═══════════════════════════════════════════════');
+  console.log('════════════════════════════════════════════════════════');
   console.log('');
 });

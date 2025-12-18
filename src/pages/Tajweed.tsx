@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { transcribeAndAnalyze, isOpenAIConfigured } from "@/services/openai";
+import { transcribeAndAnalyze, isOpenAIConfigured } from "@/services/backend-api";
 import { findVerseByArabicText, QuranVerse } from "@/data/quran-translations";
 
 const TAJWEED_RULES = [
