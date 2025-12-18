@@ -14,6 +14,10 @@ const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
 // Option 2: Directement dans le code (UNIQUEMENT pour développement local)
 // const OPENAI_API_KEY = 'sk-...votre-clé-ici';
 
+// Debug: vérifier si la clé est chargée
+console.log('🔑 Clé API OpenAI chargée:', OPENAI_API_KEY ? `Oui (${OPENAI_API_KEY.substring(0, 20)}...)` : 'Non - Variable non définie!');
+console.log('📝 Variables d\'environnement disponibles:', import.meta.env);
+
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 /**
  * Transcrit un audio en texte arabe en utilisant Whisper d'OpenAI
