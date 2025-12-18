@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowLeft, Mic, Square, Loader2, CheckCircle2,
-  AlertCircle, BookOpen, Info, Sparkles, ChevronRight
+  AlertCircle, BookOpen, Info, Sparkles, ChevronRight, Languages
 } from 'lucide-react';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
+import { transcribeAndAnalyze, isOpenAIConfigured } from "@/services/openai";
+import { findVerseByArabicText, QuranVerse } from "@/data/quran-translations";
 
 const TAJWEED_RULES = [
   {
@@ -48,10 +50,17 @@ interface TajweedResult {
   arabic_text?: string;
   translation?: string;
   overall_quality: string;
-  correct_rules?: Array<{ rule: string; description: string }>;
-  errors?: Array<{ type: string; location?: string; correction: string; rule?: string }>;
+  correct_rules?: Array<{ rule: string; description: string; location?: string }>;
+  errors?: Array<{
+    type: string;
+    location?: string;
+    correction: string;
+    rule?: string;
+    severity?: 'critical' | 'important' | 'minor';
+  }>;
   advice?: string[];
   sources?: string[];
+  identifiedVerse?: QuranVerse | null;
 }
 
 export default function TajweedPage() {
@@ -60,8 +69,14 @@ export default function TajweedPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<TajweedResult | null>(null);
   const [showRules, setShowRules] = useState(true);
+  const [liveTranslation, setLiveTranslation] = useState<QuranVerse | null>(null);
+  const [apiConfigured, setApiConfigured] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    setApiConfigured(isOpenAIConfigured());
+  }, []);
 
   const startRecording = async () => {
     try {
@@ -100,40 +115,70 @@ export default function TajweedPage() {
   const analyzeRecording = async () => {
     if (!audioBlob) return;
 
-    setProcessing(true);
-    try {
-      // Simulate analysis (replace with real API call later)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      setResult({
-        arabic_text: "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ",
-        translation: "Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux",
-        overall_quality: "good",
-        correct_rules: [
-          { rule: "Ghunna", description: "Nasalisation correcte sur 'بِسْمِ'" },
-          { rule: "Madd", description: "Prolongation bien appliquée sur 'الرَّحْمٰنِ'" }
-        ],
-        errors: [
-          {
-            type: "Prononciation",
-            location: "الرَّحِيمِ",
-            correction: "Le 'ر' doit être roulé plus clairement",
-            rule: "Makharij al-Huruf"
-          }
-        ],
-        advice: [
-          "Travaillez la prononciation du 'ر' (Ra) en le roulant légèrement",
-          "Pratiquez la Ghunna pendant 2 temps complets",
-          "Excellent début ! Continuez à pratiquer quotidiennement"
-        ],
-        sources: ["Al-Muqaddima al-Jazariyya", "Tuhfat al-Atfal"]
-      });
-    } catch (error) {
-      console.error('Error analyzing recording:', error);
+    if (!apiConfigured) {
       setResult({
         overall_quality: "cannot_analyze",
         errors: [],
-        advice: ["Une erreur s'est produite lors de l'analyse. Veuillez réessayer avec un enregistrement plus clair."]
+        advice: [
+          "❌ Configuration manquante: Clé API OpenAI non configurée.",
+          "📝 Veuillez créer un fichier .env à la racine du projet",
+          "🔑 Ajoutez: VITE_OPENAI_API_KEY=votre_clé",
+          "🌐 Obtenez une clé sur: https://platform.openai.com/api-keys"
+        ]
+      });
+      setProcessing(false);
+      return;
+    }
+
+    setProcessing(true);
+    setLiveTranslation(null);
+
+    try {
+      // 1. Transcription + Analyse via OpenAI
+      const { transcription, analysis } = await transcribeAndAnalyze(audioBlob);
+
+      // 2. Identification du verset dans notre base de données
+      const identifiedVerse = findVerseByArabicText(transcription.text);
+
+      // 3. Construire le résultat final
+      setResult({
+        arabic_text: transcription.text,
+        translation: identifiedVerse?.translationFr ||
+          "Traduction non disponible dans notre base de données. Verset non identifié.",
+        overall_quality: analysis.overall_quality,
+        correct_rules: analysis.correct_rules,
+        errors: analysis.errors,
+        advice: analysis.advice,
+        sources: analysis.sources || ["Al-Muqaddima al-Jazariyya", "Tuhfat al-Atfal"],
+        identifiedVerse
+      });
+
+      // 4. Afficher la traduction en direct
+      if (identifiedVerse) {
+        setLiveTranslation(identifiedVerse);
+      }
+
+    } catch (error: any) {
+      console.error('Error analyzing recording:', error);
+
+      let errorMessage = "Une erreur s'est produite lors de l'analyse.";
+
+      if (error.message?.includes('Clé API')) {
+        errorMessage = "Configuration OpenAI manquante. Veuillez configurer votre clé API dans le fichier .env";
+      } else if (error.message?.includes('quota')) {
+        errorMessage = "Quota API OpenAI dépassé. Veuillez vérifier votre compte OpenAI.";
+      } else if (error.message?.includes('network')) {
+        errorMessage = "Erreur de connexion. Vérifiez votre connexion Internet.";
+      }
+
+      setResult({
+        overall_quality: "cannot_analyze",
+        errors: [],
+        advice: [
+          `❌ ${errorMessage}`,
+          "Détails: " + (error.message || "Erreur inconnue"),
+          "Veuillez réessayer ou vérifier votre configuration."
+        ]
       });
     } finally {
       setProcessing(false);
@@ -253,9 +298,56 @@ export default function TajweedPage() {
                   <li>L'IA analysera votre Tajweed et vous donnera des conseils</li>
                 </ol>
               </div>
+
+              {/* Configuration Warning */}
+              {!apiConfigured && (
+                <Alert className="bg-red-50 border-red-200">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <AlertDescription className="text-sm text-red-800">
+                    <strong>⚠️ Configuration requise:</strong> La clé API OpenAI n'est pas configurée.
+                    Créez un fichier <code className="bg-red-100 px-1 rounded">.env</code> et ajoutez:
+                    <code className="block mt-2 bg-red-100 p-2 rounded">VITE_OPENAI_API_KEY=votre_clé</code>
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Live Translation Display - Shown during/after recording */}
+        {liveTranslation && (
+          <Card className="mb-6 shadow-lg border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-teal-50">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="w-6 h-6" />
+                Verset Identifié - Traduction Authentique
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <Badge className="bg-emerald-100 text-emerald-700 border-none mb-3">
+                  Sourate {liveTranslation.surahNumber}: {liveTranslation.surahName} ({liveTranslation.surahNameArabic}) - Verset {liveTranslation.ayahNumber}
+                </Badge>
+                <div className="bg-white rounded-xl p-4 border border-emerald-200 mb-3">
+                  <p className="text-3xl font-serif text-right text-gray-800 leading-loose mb-3" dir="rtl">
+                    {liveTranslation.arabic}
+                  </p>
+                </div>
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
+                  <p className="text-sm text-gray-600 font-medium mb-1">Traduction Muhammad Hamidullah:</p>
+                  <p className="text-gray-800 italic leading-relaxed">
+                    "{liveTranslation.translationFr}"
+                  </p>
+                  {liveTranslation.transliterationFr && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Translittération: {liveTranslation.transliterationFr}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Results */}
         {result && (
@@ -321,7 +413,23 @@ export default function TajweedPage() {
                     </div>
                   )}
 
-                  {/* Errors */}
+                  {/* Verset identifié */}
+                  {result.identifiedVerse && (
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-300">
+                      <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                        <BookOpen className="w-5 h-5" />
+                        Verset Identifié
+                      </h3>
+                      <Badge className="bg-emerald-600 text-white mb-2">
+                        Sourate {result.identifiedVerse.surahNumber}: {result.identifiedVerse.surahName} - Verset {result.identifiedVerse.ayahNumber}
+                      </Badge>
+                      <p className="text-xs text-emerald-700 mt-2">
+                        ✓ Traduction officielle Muhammad Hamidullah utilisée
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Errors avec niveaux de sévérité */}
                   {result.errors && result.errors.length > 0 && (
                     <div className="bg-red-50 rounded-xl p-4 border border-red-200">
                       <h3 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
@@ -330,16 +438,37 @@ export default function TajweedPage() {
                       </h3>
                       <div className="space-y-3">
                         {result.errors.map((error, idx) => (
-                          <div key={idx} className="bg-white rounded-lg p-3 border border-red-100">
-                            <p className="font-medium text-gray-800 mb-1">{error.type}</p>
+                          <div key={idx} className={cn(
+                            "bg-white rounded-lg p-3 border-l-4",
+                            error.severity === 'critical' ? 'border-l-red-600' :
+                            error.severity === 'important' ? 'border-l-orange-500' :
+                            'border-l-yellow-400'
+                          )}>
+                            <div className="flex items-start justify-between mb-2">
+                              <p className="font-medium text-gray-800">{error.type}</p>
+                              {error.severity && (
+                                <Badge variant="outline" className={cn(
+                                  "text-xs",
+                                  error.severity === 'critical' ? 'border-red-600 text-red-600' :
+                                  error.severity === 'important' ? 'border-orange-500 text-orange-500' :
+                                  'border-yellow-500 text-yellow-600'
+                                )}>
+                                  {error.severity === 'critical' ? '🔴 Critique' :
+                                   error.severity === 'important' ? '🟠 Important' :
+                                   '🟡 Mineur'}
+                                </Badge>
+                              )}
+                            </div>
                             {error.location && (
-                              <p className="text-sm text-gray-600 mb-1">📍 {error.location}</p>
+                              <p className="text-sm text-gray-600 mb-1 font-arabic text-right" dir="rtl">📍 {error.location}</p>
                             )}
-                            <p className="text-sm text-gray-700 mb-2">{error.correction}</p>
+                            <p className="text-sm text-gray-700 mb-2 bg-gray-50 p-2 rounded">{error.correction}</p>
                             {error.rule && (
-                              <Badge variant="outline" className="text-xs">
-                                Règle: {error.rule}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs bg-blue-50 border-blue-300 text-blue-700">
+                                  📚 Règle: {error.rule}
+                                </Badge>
+                              </div>
                             )}
                           </div>
                         ))}
