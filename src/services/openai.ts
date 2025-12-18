@@ -1,18 +1,34 @@
 /**
  * Service OpenAI pour Transcription (Whisper) et Analyse Tajweed (GPT-4)
- * Build: 2025-12-18T14:00
+ * Build: 2025-12-18T14:15 - Configuration localStorage
  */
 
-// Configuration depuis variables d'environnement Vercel
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+// Configuration: localStorage (priorité) > Variables d'environnement > Vide
+const getAPIKey = (): string => {
+  // 1. localStorage (configuré via /api-config)
+  const localKey = localStorage.getItem('OPENAI_API_KEY');
+  if (localKey) return localKey;
+
+  // 2. Variables d'environnement Vercel
+  if (import.meta.env.VITE_OPENAI_API_KEY) {
+    return import.meta.env.VITE_OPENAI_API_KEY;
+  }
+
+  return '';
+};
+
+const OPENAI_API_KEY = getAPIKey();
 
 // Logs de vérification
 console.log('═══════════════════════════════════════════════════');
 console.log('🚀 Muslim Pro App - OpenAI Service');
-console.log('📅 Build: 2025-12-18T14:00');
+console.log('📅 Build: 2025-12-18T14:15');
 console.log('🔑 API Key:', OPENAI_API_KEY ? `✅ Configurée (${OPENAI_API_KEY.length} chars)` : '❌ NON CONFIGURÉE');
 if (OPENAI_API_KEY) {
+  console.log('   Source:', localStorage.getItem('OPENAI_API_KEY') ? 'localStorage' : 'environnement');
   console.log('   Début:', OPENAI_API_KEY.substring(0, 20) + '...');
+} else {
+  console.log('   ⚠️ Allez sur /api-config pour configurer votre clé API');
 }
 console.log('═══════════════════════════════════════════════════');
 

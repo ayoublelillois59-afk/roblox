@@ -301,12 +301,17 @@ export default function TajweedPage() {
 
               {/* Configuration Warning */}
               {!apiConfigured && (
-                <Alert className="bg-red-50 border-red-200">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <AlertDescription className="text-sm text-red-800">
-                    <strong>⚠️ Configuration requise:</strong> La clé API OpenAI n'est pas configurée.
-                    Créez un fichier <code className="bg-red-100 px-1 rounded">.env</code> et ajoutez:
-                    <code className="block mt-2 bg-red-100 p-2 rounded">VITE_OPENAI_API_KEY=votre_clé</code>
+                <Alert className="bg-amber-50 border-amber-200">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                  <AlertDescription className="text-sm text-amber-900 space-y-3">
+                    <div>
+                      <strong>⚠️ Configuration requise:</strong> La clé API OpenAI n'est pas configurée.
+                    </div>
+                    <Link to="/api-config">
+                      <Button className="w-full bg-amber-600 hover:bg-amber-700">
+                        Configurer ma clé API →
+                      </Button>
+                    </Link>
                   </AlertDescription>
                 </Alert>
               )}

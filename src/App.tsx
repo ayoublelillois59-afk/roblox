@@ -13,6 +13,7 @@ import SettingsPage from './pages/Settings';
 import TajweedPage from './pages/Tajweed';
 import ProfilePage from './pages/Profile';
 import LoadingScreen from './pages/LoadingScreen';
+import ApiConfig from './pages/ApiConfig';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/tajweed" element={<TajweedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/loading" element={<LoadingScreen />} />
+          <Route path="/api-config" element={<ApiConfig />} />
         </Routes>
       </Layout>
     </Router>
