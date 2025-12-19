@@ -48,6 +48,7 @@ export async function analyzeTajweed(
     severity: 'critical' | 'important' | 'minor';
   }>;
   advice: string[];
+  sources?: string[];
 }> {
   const response = await fetch(`${API_URL}/api/analyze-tajweed`, {
     method: 'POST',
