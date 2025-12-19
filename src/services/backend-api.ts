@@ -16,12 +16,21 @@ export async function transcribeAudio(audioBlob: Blob): Promise<{
   language: string;
   duration: number;
 }> {
-  const formData = new FormData();
-  formData.append('audio', audioBlob, 'recording.webm');
+  // Convertir le Blob en base64
+  const arrayBuffer = await audioBlob.arrayBuffer();
+  const base64Audio = btoa(
+    new Uint8Array(arrayBuffer).reduce(
+      (data, byte) => data + String.fromCharCode(byte),
+      ''
+    )
+  );
 
   const response = await fetch(`${API_URL}/api/transcribe`, {
     method: 'POST',
-    body: formData,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ audio: base64Audio }),
   });
 
   if (!response.ok) {

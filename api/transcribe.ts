@@ -23,8 +23,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    // Récupérer l'audio du body
-    const audioBuffer = Buffer.from(req.body, 'base64');
+    const { audio } = req.body;
+
+    if (!audio) {
+      return res.status(400).json({ error: 'No audio provided' });
+    }
+
+    // Convertir base64 en Buffer
+    const audioBuffer = Buffer.from(audio, 'base64');
 
     // Créer le FormData pour OpenAI
     const formData = new FormData();
