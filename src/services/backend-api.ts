@@ -1,13 +1,12 @@
 /**
- * Service pour appeler le backend API (au lieu d'OpenAI directement)
- * Architecture: Frontend → Backend → OpenAI
- * La clé API est sécurisée côté backend
+ * Service pour appeler les API Vercel Functions
+ * Tout est sur Vercel - SIMPLE!
  */
 
-// URL du backend (configurable selon l'environnement)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Les fonctions API sont sur le même domaine
+const API_URL = ''; // Vide = même domaine Vercel
 
-console.log('🔗 Backend API URL:', API_URL);
+console.log('🔗 API Mode: Vercel Functions (même domaine)');
 
 /**
  * Transcrit un audio en texte arabe en utilisant le backend
