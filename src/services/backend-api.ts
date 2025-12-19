@@ -86,6 +86,7 @@ export async function transcribeAndAnalyze(audioBlob: Blob): Promise<{
       severity: 'critical' | 'important' | 'minor';
     }>;
     advice: string[];
+    sources?: string[];
   };
 }> {
   // 1. Transcrire l'audio
