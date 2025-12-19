@@ -12,8 +12,21 @@ game_manager := class(creative_device):
     @editable
     SpawnPads: []player_spawner_device = array{}
 
+    # 5 CATÉGORIES D'ARMES (chaque joueur reçoit 1 item de chaque catégorie)
     @editable
-    ItemGranters: []item_granter_device = array{}
+    AssaultRifleGranters: []item_granter_device = array{}  # 3 variantes : Common, Uncommon, Rare
+
+    @editable
+    ShotgunGranters: []item_granter_device = array{}  # 3 variantes : Common, Uncommon, Rare
+
+    @editable
+    SMGGranters: []item_granter_device = array{}  # 3 variantes : Common, Uncommon, Rare
+
+    @editable
+    HealingGranters: []item_granter_device = array{}  # Bandages, Med Kit, Small Shield, etc.
+
+    @editable
+    EscapeItemGranters: []item_granter_device = array{}  # Shockwave, Grappler, Launch Pad, etc.
 
     @editable
     ScoreManager: score_manager_device = score_manager_device{}
@@ -78,17 +91,43 @@ game_manager := class(creative_device):
         Sleep(0.5)
         GiveRandomLoadout(Player)
 
-    # Donner un stuff aléatoire au joueur
+    # Donner un loadout COMPLET aléatoire au joueur
+    # Chaque joueur reçoit : 1 Fusil d'assaut + 1 Pompe + 1 PM + 1 Soin + 1 Objet d'échappement
     GiveRandomLoadout(Player: player): void =
-        if (ItemGranters.Length > 0):
+        if (Agent := agent[Player]):
             RandomGen := GetRandomGenerator()
-            # Choisir 1-2 item granters aléatoires
-            NumItems := RandomGen.RollDice(2) + 1 # Entre 1 et 2
-            for (I := 0..NumItems):
-                RandomIndex := RandomGen.RollDice(ItemGranters.Length)
-                if (ItemGranter := ItemGranters[RandomIndex]):
-                    if (Agent := agent[Player]):
-                        ItemGranter.GrantItem(Agent)
+
+            # 1. FUSIL D'ASSAUT (variante aléatoire)
+            if (AssaultRifleGranters.Length > 0):
+                RandomIndex := RandomGen.RollDice(AssaultRifleGranters.Length)
+                if (ItemGranter := AssaultRifleGranters[RandomIndex]):
+                    ItemGranter.GrantItem(Agent)
+
+            # 2. SHOTGUN / POMPE (variante aléatoire)
+            if (ShotgunGranters.Length > 0):
+                RandomIndex := RandomGen.RollDice(ShotgunGranters.Length)
+                if (ItemGranter := ShotgunGranters[RandomIndex]):
+                    ItemGranter.GrantItem(Agent)
+
+            # 3. SMG / PM (variante aléatoire)
+            if (SMGGranters.Length > 0):
+                RandomIndex := RandomGen.RollDice(SMGGranters.Length)
+                if (ItemGranter := SMGGranters[RandomIndex]):
+                    ItemGranter.GrantItem(Agent)
+
+            # 4. SOIN (variante aléatoire)
+            if (HealingGranters.Length > 0):
+                RandomIndex := RandomGen.RollDice(HealingGranters.Length)
+                if (ItemGranter := HealingGranters[RandomIndex]):
+                    ItemGranter.GrantItem(Agent)
+
+            # 5. OBJET D'ÉCHAPPEMENT (variante aléatoire)
+            if (EscapeItemGranters.Length > 0):
+                RandomIndex := RandomGen.RollDice(EscapeItemGranters.Length)
+                if (ItemGranter := EscapeItemGranters[RandomIndex]):
+                    ItemGranter.GrantItem(Agent)
+
+            Print("{Player} a reçu un nouveau loadout !")
 
     # Récupérer les pièces d'un joueur
     GetPlayerCoins(Player: player)<public>: int =

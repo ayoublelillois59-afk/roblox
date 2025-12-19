@@ -11,102 +11,104 @@ shop_system := class(creative_device):
     @editable
     GameManager: game_manager = game_manager{}
 
-    # Boutons pour acheter des items
+    # ============ ARMES EPIC/LEGENDARY (meilleures que le spawn) ============
     @editable
-    WeaponButton1: button_device = button_device{} # Arme niveau 1 - 3 pièces
+    EpicARButton: button_device = button_device{} # Fusil d'assaut Epic - 5 pièces
 
     @editable
-    WeaponButton2: button_device = button_device{} # Arme niveau 2 - 5 pièces
+    EpicARGranter: item_granter_device = item_granter_device{} # Epic Assault Rifle
 
     @editable
-    WeaponButton3: button_device = button_device{} # Arme niveau 3 - 10 pièces
+    LegendaryShotgunButton: button_device = button_device{} # Pompe Legendary - 7 pièces
 
     @editable
-    DoubleJumpButton: button_device = button_device{} # Double Jump - 7 pièces
+    LegendaryShotgunGranter: item_granter_device = item_granter_device{} # Legendary Pump
 
     @editable
-    SpeedBoostButton: button_device = button_device{} # Speed Boost - 5 pièces
-
-    # Item Granters pour les armes
-    @editable
-    Weapon1Granter: item_granter_device = item_granter_device{} # Ex: Fusil d'assaut
+    SniperButton: button_device = button_device{} # Sniper Legendary - 10 pièces
 
     @editable
-    Weapon2Granter: item_granter_device = item_granter_device{} # Ex: Fusil à pompe légendaire
+    SniperGranter: item_granter_device = item_granter_device{} # Legendary Sniper
 
+    # ============ POUVOIRS ============
     @editable
-    Weapon3Granter: item_granter_device = item_granter_device{} # Ex: Sniper mythique
+    DoubleJumpButton: button_device = button_device{} # Double Jump - 8 pièces
 
-    # Mutateurs pour les pouvoirs
     @editable
     DoubleJumpMutator: mutator_zone_device = mutator_zone_device{}
 
     @editable
+    SpeedBoostButton: button_device = button_device{} # Speed Boost - 6 pièces
+
+    @editable
     SpeedBoostMutator: mutator_zone_device = mutator_zone_device{}
 
-    # Prix des items
-    Weapon1Price: int = 3
-    Weapon2Price: int = 5
-    Weapon3Price: int = 10
-    DoubleJumpPrice: int = 7
-    SpeedBoostPrice: int = 5
+    # Prix des items (modifiables)
+    EpicARPrice: int = 5
+    LegendaryShotgunPrice: int = 7
+    SniperPrice: int = 10
+    DoubleJumpPrice: int = 8
+    SpeedBoostPrice: int = 6
 
     OnBegin<override>()<suspends>: void =
         Print("Shop System - Initialisation...")
 
-        # Connecter les boutons
-        WeaponButton1.InteractedWithEvent.Subscribe(OnWeapon1Purchased)
-        WeaponButton2.InteractedWithEvent.Subscribe(OnWeapon2Purchased)
-        WeaponButton3.InteractedWithEvent.Subscribe(OnWeapon3Purchased)
+        # Connecter les boutons d'armes
+        EpicARButton.InteractedWithEvent.Subscribe(OnEpicARPurchased)
+        LegendaryShotgunButton.InteractedWithEvent.Subscribe(OnLegendaryShotgunPurchased)
+        SniperButton.InteractedWithEvent.Subscribe(OnSniperPurchased)
+
+        # Connecter les boutons de pouvoirs
         DoubleJumpButton.InteractedWithEvent.Subscribe(OnDoubleJumpPurchased)
         SpeedBoostButton.InteractedWithEvent.Subscribe(OnSpeedBoostPurchased)
 
-        Print("Shop prêt !")
+        Print("Shop prêt ! Armes EPIC/LEGENDARY disponibles !")
 
-    # Achat Arme 1
-    OnWeapon1Purchased(Agent: agent): void =
+    # ============ ACHATS D'ARMES ============
+
+    # Achat Fusil d'Assaut Epic (5 pièces)
+    OnEpicARPurchased(Agent: agent): void =
         if (Player := player[Agent]):
-            if (GameManager.RemoveCoins(Player, Weapon1Price)):
-                Weapon1Granter.GrantItem(Agent)
-                Print("{Player} a acheté l'arme niveau 1 !")
+            if (GameManager.RemoveCoins(Player, EpicARPrice)):
+                EpicARGranter.GrantItem(Agent)
+                Print("{Player} a acheté un Fusil d'Assaut EPIC ! (5 pièces)")
             else:
-                Print("{Player} n'a pas assez de pièces (besoin de {Weapon1Price})")
+                Print("{Player} - Pas assez de pièces ! (besoin de {EpicARPrice})")
 
-    # Achat Arme 2
-    OnWeapon2Purchased(Agent: agent): void =
+    # Achat Pompe Legendary (7 pièces)
+    OnLegendaryShotgunPurchased(Agent: agent): void =
         if (Player := player[Agent]):
-            if (GameManager.RemoveCoins(Player, Weapon2Price)):
-                Weapon2Granter.GrantItem(Agent)
-                Print("{Player} a acheté l'arme niveau 2 !")
+            if (GameManager.RemoveCoins(Player, LegendaryShotgunPrice)):
+                LegendaryShotgunGranter.GrantItem(Agent)
+                Print("{Player} a acheté un Pompe LEGENDARY ! (7 pièces)")
             else:
-                Print("{Player} n'a pas assez de pièces (besoin de {Weapon2Price})")
+                Print("{Player} - Pas assez de pièces ! (besoin de {LegendaryShotgunPrice})")
 
-    # Achat Arme 3
-    OnWeapon3Purchased(Agent: agent): void =
+    # Achat Sniper Legendary (10 pièces)
+    OnSniperPurchased(Agent: agent): void =
         if (Player := player[Agent]):
-            if (GameManager.RemoveCoins(Player, Weapon3Price)):
-                Weapon3Granter.GrantItem(Agent)
-                Print("{Player} a acheté l'arme niveau 3 !")
+            if (GameManager.RemoveCoins(Player, SniperPrice)):
+                SniperGranter.GrantItem(Agent)
+                Print("{Player} a acheté un SNIPER LEGENDARY ! (10 pièces)")
             else:
-                Print("{Player} n'a pas assez de pièces (besoin de {Weapon3Price})")
+                Print("{Player} - Pas assez de pièces ! (besoin de {SniperPrice})")
 
-    # Achat Double Jump
+    # ============ ACHATS DE POUVOIRS ============
+
+    # Achat Double Jump (8 pièces)
     OnDoubleJumpPurchased(Agent: agent): void =
         if (Player := player[Agent]):
             if (GameManager.RemoveCoins(Player, DoubleJumpPrice)):
-                # Activer le double jump pour ce joueur
-                if (FortChar := Player.GetFortCharacter[]):
-                    DoubleJumpMutator.Enable()
-                    Print("{Player} a acheté le Double Jump !")
+                DoubleJumpMutator.Enable()
+                Print("{Player} a activé le DOUBLE JUMP ! (8 pièces)")
             else:
-                Print("{Player} n'a pas assez de pièces (besoin de {DoubleJumpPrice})")
+                Print("{Player} - Pas assez de pièces ! (besoin de {DoubleJumpPrice})")
 
-    # Achat Speed Boost
+    # Achat Speed Boost (6 pièces)
     OnSpeedBoostPurchased(Agent: agent): void =
         if (Player := player[Agent]):
             if (GameManager.RemoveCoins(Player, SpeedBoostPrice)):
-                # Activer le speed boost pour ce joueur
                 SpeedBoostMutator.Enable()
-                Print("{Player} a acheté le Speed Boost !")
+                Print("{Player} a activé le SPEED BOOST ! (6 pièces)")
             else:
-                Print("{Player} n'a pas assez de pièces (besoin de {SpeedBoostPrice})")
+                Print("{Player} - Pas assez de pièces ! (besoin de {SpeedBoostPrice})")
