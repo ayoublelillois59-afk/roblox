@@ -1,55 +1,28 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Mic, Square, Loader2, CheckCircle2,
-  AlertCircle, BookOpen, Info, Sparkles, ChevronRight, Languages
+  AlertCircle, BookOpen, CheckCircle2, ChevronRight, Languages,
+  Lightbulb, Loader2, Mic, Sparkles, Square,
 } from 'lucide-react';
-import { createPageUrl } from "@/utils";
-import { cn } from "@/lib/utils";
-import { transcribeAndAnalyze, isOpenAIConfigured } from "@/services/cloudflare-ai";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { getSurah, detectVerse, splitTranscriptionIntoVerses, getMatchIndex, FullVerse } from "@/services/quran-full";
+import { Screen, PageHeader, PCard, ProgressRing, itemVariants, EASE } from '@/components/premium';
+import { cn } from '@/lib/utils';
+import { transcribeAndAnalyze } from '@/services/cloudflare-ai';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import {
+  getSurah, detectVerse, splitTranscriptionIntoVerses, getMatchIndex, FullVerse,
+} from '@/services/quran-full';
+import { recordTajweedSession, addVersesRecited } from '@/services/stats';
 
 const TAJWEED_RULES = [
-  {
-    id: 'ghunna',
-    title: 'La Ghunna',
-    description: 'Nasalisation de 2 temps sur les lettres ن et م',
-    example: 'مِنْ كُلِّ'
-  },
-  {
-    id: 'madd',
-    title: 'Le Madd (Prolongation)',
-    description: 'Prolongation de 2, 4 ou 6 temps selon le type',
-    example: 'قَالَ - يَا أَيُّهَا'
-  },
-  {
-    id: 'qalqala',
-    title: 'La Qalqala',
-    description: 'Rebondissement sur les lettres: ق ط ب ج د',
-    example: 'قَدْ - لَمْ يَلِدْ'
-  },
-  {
-    id: 'idgham',
-    title: "L'Idgham",
-    description: 'Fusion de deux lettres identiques ou similaires',
-    example: 'مِنْ رَّبِّهِمْ'
-  },
-  {
-    id: 'ikhfa',
-    title: "L'Ikhfa",
-    description: 'Dissimulation du Noon ou Tanwin',
-    example: 'مَنْ صَدَقَ'
-  }
+  { id: 'ghunna', title: 'La Ghunna', description: 'Nasalisation de 2 temps sur les lettres ن et م', example: 'مِنْ كُلِّ' },
+  { id: 'madd', title: 'Le Madd', description: 'Prolongation de 2, 4 ou 6 temps selon le type', example: 'قَالَ - يَا أَيُّهَا' },
+  { id: 'qalqala', title: 'La Qalqala', description: 'Rebondissement sur les lettres ق ط ب ج د', example: 'قَدْ - لَمْ يَلِدْ' },
+  { id: 'idgham', title: "L'Idgham", description: 'Fusion de deux lettres identiques ou similaires', example: 'مِنْ رَّبِّهِمْ' },
+  { id: 'ikhfa', title: "L'Ikhfa", description: 'Dissimulation du Noon ou du Tanwin', example: 'مَنْ صَدَقَ' },
 ];
 
 interface TajweedResult {
   arabic_text?: string;
-  translation?: string;
   overall_quality: string;
   correct_rules?: Array<{ rule: string; description: string; location?: string }>;
   errors?: Array<{
@@ -62,28 +35,79 @@ interface TajweedResult {
   advice?: string[];
   sources?: string[];
   verses?: FullVerse[];
+  score?: number;
 }
+
+function computeScore(a: { overall_quality: string; errors?: Array<{ severity?: string }> }): number {
+  const base =
+    a.overall_quality === 'excellent' ? 95 : a.overall_quality === 'good' ? 84 : 68;
+  const penalty = (a.errors || []).reduce(
+    (acc, e) => acc + (e.severity === 'critical' ? 4 : e.severity === 'important' ? 2 : 1),
+    0
+  );
+  return Math.max(40, Math.min(98, base - penalty));
+}
+
+const N_BARS = 22;
 
 export default function TajweedPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<TajweedResult | null>(null);
-  const [showRules, setShowRules] = useState(true);
+  const [showRules, setShowRules] = useState(false);
   const [liveVerses, setLiveVerses] = useState<FullVerse[]>([]);
-  const [apiConfigured, setApiConfigured] = useState(false);
+  const [levels, setLevels] = useState<number[]>(Array(N_BARS).fill(0));
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const lastVerseRef = useRef<string>('');
   const liveScrollRef = useRef<HTMLDivElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    setApiConfigured(isOpenAIConfigured());
-    // Préchargement du Coran en arrière-plan (pour la détection en direct)
-    getMatchIndex().catch(() => { /* sera retenté au besoin */ });
+    // Préchargement du Coran (détection en direct)
+    getMatchIndex().catch(() => { /* retenté au besoin */ });
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      audioCtxRef.current?.close().catch(() => { /* déjà fermé */ });
+    };
   }, []);
 
-  // Détection en direct du verset récité → traduction qui défile
+  /* ── Visualisation réelle de la voix (Web Audio) ────────────── */
+  const startMeter = (stream: MediaStream) => {
+    try {
+      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx: AudioContext = new Ctx();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.75;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      audioCtxRef.current = ctx;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(data);
+        const step = data.length / N_BARS;
+        setLevels(
+          Array.from({ length: N_BARS }, (_, i) => data[Math.floor(i * step)] / 255)
+        );
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch (_) {
+      /* visualisation best-effort */
+    }
+  };
+
+  const stopMeter = () => {
+    cancelAnimationFrame(rafRef.current);
+    audioCtxRef.current?.close().catch(() => { /* ignore */ });
+    audioCtxRef.current = null;
+    setLevels(Array(N_BARS).fill(0));
+  };
+
+  /* ── Traduction en direct ───────────────────────────────────── */
   const handleSpeech = useCallback(async (text: string, isFinal: boolean) => {
     if (!isFinal) return;
     try {
@@ -92,59 +116,51 @@ export default function TajweedPage() {
       const key = `${ref.surah}:${ref.ayah}`;
       if (key === lastVerseRef.current) return;
       lastVerseRef.current = key;
-
       const surah = await getSurah(ref.surah);
-      const verse = surah.find(v => v.ayah === ref.ayah);
+      const verse = surah.find((v) => v.ayah === ref.ayah);
       if (!verse) return;
-
-      setLiveVerses(prev =>
-        prev.some(v => v.surah === verse.surah && v.ayah === verse.ayah)
+      setLiveVerses((prev) =>
+        prev.some((v) => v.surah === verse.surah && v.ayah === verse.ayah)
           ? prev
           : [...prev, verse]
       );
     } catch (_) {
-      /* détection best-effort : on ignore les erreurs */
+      /* best-effort */
     }
   }, []);
 
   const { supported: speechSupported, start: startSpeech, stop: stopSpeech } =
     useSpeechRecognition(handleSpeech);
 
-  // Auto-scroll de la traduction qui défile
   useEffect(() => {
     if (liveScrollRef.current) {
       liveScrollRef.current.scrollTop = liveScrollRef.current.scrollHeight;
     }
   }, [liveVerses]);
 
+  /* ── Enregistrement ─────────────────────────────────────────── */
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       chunksRef.current = [];
-
       mediaRecorderRef.current.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
+        if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
-        stream.getTracks().forEach(track => track.stop());
+        setAudioBlob(new Blob(chunksRef.current, { type: 'audio/webm' }));
+        stream.getTracks().forEach((t) => t.stop());
+        stopMeter();
       };
-
       mediaRecorderRef.current.start();
       setIsRecording(true);
       setResult(null);
       setLiveVerses([]);
       lastVerseRef.current = '';
-      // Démarrage de la traduction en temps réel (si le navigateur le permet)
+      startMeter(stream);
       if (speechSupported) startSpeech();
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      alert('Erreur: Impossible d\'accéder au microphone. Veuillez autoriser l\'accès.');
+    } catch (_) {
+      alert("Erreur : impossible d'accéder au microphone. Veuillez autoriser l'accès.");
     }
   };
 
@@ -156,55 +172,41 @@ export default function TajweedPage() {
     }
   };
 
+  /* ── Analyse ────────────────────────────────────────────────── */
   const analyzeRecording = async () => {
     if (!audioBlob) return;
-
     setProcessing(true);
-
     try {
-      // 1. Transcription + Analyse Tajweed (Groq via le Worker)
       const { transcription, analysis } = await transcribeAndAnalyze(audioBlob);
 
-      // 2. Traduction verset par verset (sourate entière) via le Coran complet
       let verses: FullVerse[] = [];
       try {
         verses = await splitTranscriptionIntoVerses(transcription.text);
-      } catch (_) {
-        /* traduction best-effort */
-      }
+      } catch (_) { /* best-effort */ }
 
-      // 3. Construire le résultat final
+      const score = computeScore(analysis);
+      recordTajweedSession(score);
+      if (verses.length) addVersesRecited(verses.length);
+
       setResult({
         arabic_text: transcription.text,
         overall_quality: analysis.overall_quality,
         correct_rules: analysis.correct_rules,
         errors: analysis.errors,
         advice: analysis.advice,
-        sources: analysis.sources || ["Al-Muqaddima al-Jazariyya", "Tuhfat al-Atfal"],
+        sources: analysis.sources || ['Al-Muqaddima al-Jazariyya', 'Tuhfat al-Atfal'],
         verses,
+        score,
       });
-
     } catch (error: any) {
-      console.error('Error analyzing recording:', error);
-
-      let errorMessage = "Une erreur s'est produite lors de l'analyse.";
-
-      if (error.message?.includes('Clé API')) {
-        errorMessage = "Configuration OpenAI manquante. Veuillez configurer votre clé API dans le fichier .env";
-      } else if (error.message?.includes('quota')) {
-        errorMessage = "Quota API OpenAI dépassé. Veuillez vérifier votre compte OpenAI.";
-      } else if (error.message?.includes('network')) {
-        errorMessage = "Erreur de connexion. Vérifiez votre connexion Internet.";
-      }
-
       setResult({
-        overall_quality: "cannot_analyze",
+        overall_quality: 'cannot_analyze',
         errors: [],
         advice: [
-          `❌ ${errorMessage}`,
-          "Détails: " + (error.message || "Erreur inconnue"),
-          "Veuillez réessayer ou vérifier votre configuration."
-        ]
+          "Une erreur s'est produite lors de l'analyse.",
+          'Détails : ' + (error?.message || 'Erreur inconnue'),
+          'Réessaie avec un enregistrement clair de quelques secondes.',
+        ],
       });
     } finally {
       setProcessing(false);
@@ -212,398 +214,395 @@ export default function TajweedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d9488]/10 via-white to-emerald-50 pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold">تحسين التجويد</h1>
-            <p className="text-sm opacity-90">Correction de Tajweed par IA</p>
+    <Screen>
+      <PageHeader
+        title="Coach Tajwid"
+        arabic="تحسين التجويد"
+        subtitle="Récite, l'IA t'écoute et te corrige"
+      />
+
+      {/* ── Studio d'enregistrement ────────────────────── */}
+      <motion.div variants={itemVariants}>
+        <PCard variant="dark" className="relative overflow-hidden px-6 pb-6 pt-8 text-center">
+          {/* Visualisation de la voix */}
+          <div className="mx-auto flex h-12 items-end justify-center gap-[3px]">
+            {levels.map((v, i) => (
+              <div
+                key={i}
+                className="w-[3px] rounded-full bg-gold transition-[height] duration-75"
+                style={{
+                  height: `${Math.max(6, v * 100)}%`,
+                  opacity: isRecording ? 0.4 + v * 0.6 : 0.18,
+                }}
+              />
+            ))}
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Info Banner */}
-        <Alert className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-          <Sparkles className="w-5 h-5 text-blue-600" />
-          <AlertDescription className="text-sm text-blue-800">
-            <strong>Fonctionnalité Premium:</strong> Enregistrez votre récitation et recevez une analyse
-            détaillée de votre Tajweed basée sur les règles authentiques enseignées par les savants.
-          </AlertDescription>
-        </Alert>
-
-        {/* Recording Section */}
-        <Card className="mb-6 shadow-lg border-none">
-          <CardHeader className="bg-gradient-to-r from-[#0d9488]/10 to-emerald-50">
-            <CardTitle className="flex items-center gap-2">
-              <Mic className="w-6 h-6 text-[#0d9488]" />
-              Enregistrer votre récitation
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="text-center space-y-6">
-              {/* Recording Button */}
-              <div>
-                {!isRecording ? (
-                  <Button
-                    onClick={startRecording}
-                    size="lg"
-                    className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-xl"
-                    disabled={processing}
-                  >
-                    <div className="flex flex-col items-center">
-                      <Mic className="w-12 h-12 mb-2" />
-                      <span className="text-sm">Enregistrer</span>
-                    </div>
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={stopRecording}
-                    size="lg"
-                    className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 shadow-xl animate-pulse"
-                  >
-                    <div className="flex flex-col items-center">
-                      <Square className="w-12 h-12 mb-2 fill-current" />
-                      <span className="text-sm">Arrêter</span>
-                    </div>
-                  </Button>
-                )}
-              </div>
-
-              {/* Status */}
-              {isRecording && (
-                <div className="flex items-center justify-center gap-2 text-red-600">
-                  <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
-                  <span className="font-medium">Enregistrement en cours...</span>
-                </div>
+          {/* Bouton micro */}
+          <div className="relative mx-auto mt-7 h-24 w-24">
+            {isRecording && (
+              <>
+                <div className="absolute inset-0 animate-breathe rounded-full border border-gold/50" />
+                <div
+                  className="absolute -inset-3 animate-breathe rounded-full border border-gold/25"
+                  style={{ animationDelay: '0.6s' }}
+                />
+              </>
+            )}
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={processing}
+              className={cn(
+                'relative flex h-24 w-24 items-center justify-center rounded-full shadow-glow-gold transition-colors duration-300',
+                isRecording ? 'bg-gold' : 'bg-forest'
               )}
-
-              {/* Analyze Button */}
-              {audioBlob && !isRecording && (
-                <div className="space-y-3">
-                  <p className="text-sm text-green-600 font-medium flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Enregistrement terminé
-                  </p>
-                  <Button
-                    onClick={analyzeRecording}
-                    disabled={processing}
-                    className="bg-[#0d9488] hover:bg-[#0f766e]"
-                  >
-                    {processing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Analyse en cours...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Analyser le Tajweed
-                      </>
-                    )}
-                  </Button>
-                </div>
+              aria-label={isRecording ? "Arrêter l'enregistrement" : "Commencer l'enregistrement"}
+            >
+              {isRecording ? (
+                <Square className="h-8 w-8 fill-ink text-ink" strokeWidth={1.75} />
+              ) : (
+                <Mic className="h-9 w-9 text-ivory-50" strokeWidth={1.5} />
               )}
+            </motion.button>
+          </div>
 
-              {/* Instructions */}
-              <div className="text-left bg-amber-50 rounded-xl p-4 border border-amber-200">
-                <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
-                  <Info className="w-4 h-4" />
-                  Comment utiliser:
-                </h4>
-                <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
-                  <li>Cliquez sur le bouton pour commencer l'enregistrement</li>
-                  <li>Récitez un verset ou une sourate du Coran</li>
-                  <li>Cliquez sur "Arrêter" quand vous avez terminé</li>
-                  <li>L'IA analysera votre Tajweed et vous donnera des conseils</li>
-                </ol>
-              </div>
+          <p className="mt-6 text-headline text-ivory-50">
+            {isRecording ? 'Je t\'écoute…' : 'Appuie pour commencer ta récitation'}
+          </p>
+          <p className="mt-1 text-footnote text-ivory-50/50">
+            {isRecording
+              ? 'Appuie sur le carré quand tu as terminé'
+              : 'Récite un verset ou une sourate entière, clairement'}
+          </p>
 
-              {/* Configuration Warning */}
-              {!apiConfigured && (
-                <Alert className="bg-amber-50 border-amber-200">
-                  <AlertCircle className="w-5 h-5 text-amber-600" />
-                  <AlertDescription className="text-sm text-amber-900 space-y-3">
-                    <div>
-                      <strong>⚠️ Configuration requise:</strong> La clé API OpenAI n'est pas configurée.
-                    </div>
-                    <Link to="/api-config">
-                      <Button className="w-full bg-amber-600 hover:bg-amber-700">
-                        Configurer ma clé API →
-                      </Button>
-                    </Link>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          {/* Analyse */}
+          <AnimatePresence>
+            {audioBlob && !isRecording && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="mt-6"
+              >
+                <button
+                  onClick={analyzeRecording}
+                  disabled={processing}
+                  className="inline-flex items-center gap-2 rounded-full bg-ivory-50 px-6 py-3 text-callout font-semibold text-ink disabled:opacity-70"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Analyse en cours…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 text-gold-600" strokeWidth={1.75} />
+                      Analyser ma récitation
+                    </>
+                  )}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </PCard>
+      </motion.div>
 
-        {/* Traduction en temps réel qui défile pendant la récitation */}
+      {/* ── Traduction en direct ───────────────────────── */}
+      <AnimatePresence>
         {(isRecording || liveVerses.length > 0) && (
-          <Card className="mb-6 shadow-lg border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-teal-50">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-              <CardTitle className="flex items-center gap-2">
-                <Languages className="w-6 h-6" />
-                Traduction en direct
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            className="mt-4"
+          >
+            <PCard className="p-4">
+              <div className="flex items-center gap-2 px-1">
+                <Languages className="h-4 w-4 text-gold-600" strokeWidth={1.75} />
+                <p className="text-caption uppercase text-gold-600">Traduction en direct</p>
                 {isRecording && speechSupported && (
-                  <span className="ml-2 flex items-center gap-1 text-xs font-normal bg-white/20 px-2 py-1 rounded-full">
-                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" /> en écoute
+                  <span className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-warm">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-forest" />
+                    en écoute
                   </span>
                 )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
+              </div>
+
               {isRecording && !speechSupported && (
-                <p className="text-sm text-amber-700 bg-amber-50 rounded-lg p-3 mb-3">
-                  La traduction en direct n'est pas disponible sur ce navigateur.
-                  La traduction complète s'affichera après l'analyse. (Astuce : utilise Chrome)
+                <p className="mt-3 rounded-tile bg-sand px-3 py-2.5 text-footnote text-muted-warm">
+                  Traduction en direct non disponible sur ce navigateur — elle
+                  s'affichera après l'analyse. (Astuce : utilise Chrome)
                 </p>
               )}
               {liveVerses.length === 0 && isRecording && speechSupported && (
-                <p className="text-sm text-gray-500 italic text-center py-4">
-                  Récite… la traduction de chaque verset apparaîtra ici.
+                <p className="mt-3 px-1 py-3 text-center text-footnote italic text-faint">
+                  Récite… chaque verset traduit apparaîtra ici.
                 </p>
               )}
-              <div ref={liveScrollRef} className="max-h-80 overflow-y-auto space-y-3 scroll-smooth">
+
+              <div ref={liveScrollRef} className="mt-2 max-h-72 space-y-2 overflow-y-auto scroll-smooth">
                 {liveVerses.map((verse, idx) => (
-                  <div
+                  <motion.div
                     key={`${verse.surah}:${verse.ayah}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: EASE }}
                     className={cn(
-                      "bg-white rounded-xl p-4 border transition-all",
+                      'rounded-tile border p-4',
                       idx === liveVerses.length - 1
-                        ? "border-emerald-400 shadow-md ring-2 ring-emerald-200"
-                        : "border-emerald-100 opacity-80"
+                        ? 'border-gold/40 bg-gold-200/30'
+                        : 'border-hairline bg-ivory opacity-75'
                     )}
                   >
-                    <Badge className="bg-emerald-100 text-emerald-700 border-none mb-2 text-xs">
+                    <p className="text-caption uppercase text-gold-600">
                       Sourate {verse.surah} · Verset {verse.ayah}
-                    </Badge>
-                    <p className="text-2xl font-serif text-right text-gray-800 leading-loose mb-2" dir="rtl">
+                    </p>
+                    <p className="mt-2 font-quran text-xl leading-[1.9] text-ink" dir="rtl">
                       {verse.arabic}
                     </p>
-                    <p className="text-gray-700 italic leading-relaxed">"{verse.french}"</p>
-                  </div>
+                    <p className="mt-1.5 text-footnote italic text-muted-warm">
+                      « {verse.french} »
+                    </p>
+                  </motion.div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </PCard>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Results */}
-        {result && (
-          <Card className="mb-6 shadow-lg border-none">
-            <CardHeader className="bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white">
-              <CardTitle>Résultats de l'analyse</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              {result.overall_quality === "cannot_analyze" ? (
-                <Alert className="bg-red-50 border-red-200">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <AlertDescription className="text-red-800">
-                    Impossible d'analyser l'enregistrement. Veuillez réessayer avec un audio plus clair.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <>
-                  {/* Transcription */}
-                  {result.arabic_text && (
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">Ce que tu as récité (transcription):</h3>
-                      <p className="text-2xl font-serif text-right text-gray-800 mb-2" dir="rtl">
-                        {result.arabic_text}
-                      </p>
-                    </div>
-                  )}
+      {/* ── Résultats ──────────────────────────────────── */}
+      {result && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="mt-4 space-y-4"
+        >
+          {result.overall_quality === 'cannot_analyze' ? (
+            <PCard className="border-danger/20">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-danger" strokeWidth={1.75} />
+                <div>
+                  <p className="text-headline text-ink">Analyse impossible</p>
+                  {result.advice?.map((a, i) => (
+                    <p key={i} className="mt-1 text-footnote text-muted-warm">{a}</p>
+                  ))}
+                </div>
+              </div>
+            </PCard>
+          ) : (
+            <>
+              {/* Score */}
+              <PCard className="flex items-center gap-5">
+                <ProgressRing progress={(result.score ?? 0) / 100} size={84} stroke={4}>
+                  <p className="tnum text-title2 text-ink">{result.score}%</p>
+                </ProgressRing>
+                <div>
+                  <p className="text-caption uppercase text-gold-600">Score Tajwid</p>
+                  <p className="mt-1 text-headline text-ink">
+                    {result.overall_quality === 'excellent'
+                      ? 'Excellente récitation'
+                      : result.overall_quality === 'good'
+                        ? 'Belle récitation'
+                        : 'En bonne voie'}
+                  </p>
+                  <p className="mt-0.5 text-footnote text-muted-warm">
+                    {(result.errors?.length || 0) === 0
+                      ? 'Aucune erreur relevée'
+                      : `${result.errors!.length} point${result.errors!.length > 1 ? 's' : ''} à travailler`}
+                  </p>
+                </div>
+              </PCard>
 
-                  {/* Quality Badge */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Qualité globale:</span>
-                    <Badge className={
-                      result.overall_quality === "excellent" ? "bg-green-500" :
-                      result.overall_quality === "good" ? "bg-blue-500" :
-                      "bg-orange-500"
-                    }>
-                      {result.overall_quality === "excellent" ? "Excellent" :
-                       result.overall_quality === "good" ? "Bien" :
-                       "À améliorer"}
-                    </Badge>
-                  </div>
-
-                  {/* Correct Rules */}
-                  {result.correct_rules && result.correct_rules.length > 0 && (
-                    <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                      <h3 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
-                        <CheckCircle2 className="w-5 h-5" />
-                        Règles bien appliquées
-                      </h3>
-                      <div className="space-y-2">
-                        {result.correct_rules.map((rule, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-green-800">{rule.rule}</p>
-                              <p className="text-sm text-green-700">{rule.description}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Traduction complète verset par verset (sourate entière) */}
-                  {result.verses && result.verses.length > 0 && (
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-300">
-                      <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                        <Languages className="w-5 h-5" />
-                        Traduction verset par verset
-                      </h3>
-                      <div className="space-y-3">
-                        {result.verses.map((verse) => (
-                          <div key={`${verse.surah}:${verse.ayah}`} className="bg-white rounded-lg p-3 border border-emerald-200">
-                            <Badge className="bg-emerald-600 text-white mb-2 text-xs">
-                              Sourate {verse.surah} · Verset {verse.ayah}
-                            </Badge>
-                            <p className="text-xl font-serif text-right text-gray-800 leading-loose mb-1" dir="rtl">
-                              {verse.arabic}
-                            </p>
-                            <p className="text-sm text-gray-700 italic">"{verse.french}"</p>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-xs text-emerald-700 mt-3">
-                        ✓ Traduction officielle Muhammad Hamidullah
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Errors avec niveaux de sévérité */}
-                  {result.errors && result.errors.length > 0 && (
-                    <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-                      <h3 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5" />
-                        Points à corriger
-                      </h3>
-                      <div className="space-y-3">
-                        {result.errors.map((error, idx) => (
-                          <div key={idx} className={cn(
-                            "bg-white rounded-lg p-3 border-l-4",
-                            error.severity === 'critical' ? 'border-l-red-600' :
-                            error.severity === 'important' ? 'border-l-orange-500' :
-                            'border-l-yellow-400'
-                          )}>
-                            <div className="flex items-start justify-between mb-2">
-                              <p className="font-medium text-gray-800">{error.type}</p>
-                              {error.severity && (
-                                <Badge variant="outline" className={cn(
-                                  "text-xs",
-                                  error.severity === 'critical' ? 'border-red-600 text-red-600' :
-                                  error.severity === 'important' ? 'border-orange-500 text-orange-500' :
-                                  'border-yellow-500 text-yellow-600'
-                                )}>
-                                  {error.severity === 'critical' ? '🔴 Critique' :
-                                   error.severity === 'important' ? '🟠 Important' :
-                                   '🟡 Mineur'}
-                                </Badge>
-                              )}
-                            </div>
-                            {error.location && (
-                              <p className="text-sm text-gray-600 mb-1 font-arabic text-right" dir="rtl">📍 {error.location}</p>
-                            )}
-                            <p className="text-sm text-gray-700 mb-2 bg-gray-50 p-2 rounded">{error.correction}</p>
-                            {error.rule && (
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs bg-blue-50 border-blue-300 text-blue-700">
-                                  📚 Règle: {error.rule}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Advice */}
-                  {result.advice && result.advice.length > 0 && (
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                      <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                        <BookOpen className="w-5 h-5" />
-                        Conseils pour s'améliorer
-                      </h3>
-                      <ul className="space-y-2">
-                        {result.advice.map((tip, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-sm text-blue-700">
-                            <span className="text-blue-500">•</span>
-                            <span>{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Sources */}
-                  {result.sources && result.sources.length > 0 && (
-                    <div className="border-t pt-4">
-                      <p className="text-xs text-gray-500 flex items-center gap-2">
-                        <BookOpen className="w-3 h-3" />
-                        Sources: {result.sources.join(', ')}
-                      </p>
-                    </div>
-                  )}
-                </>
+              {/* Transcription */}
+              {result.arabic_text && (
+                <PCard>
+                  <p className="text-caption uppercase text-gold-600">Ta récitation</p>
+                  <p className="mt-3 font-quran text-2xl leading-[2] text-ink" dir="rtl">
+                    {result.arabic_text}
+                  </p>
+                </PCard>
               )}
-            </CardContent>
-          </Card>
-        )}
 
-        {/* Tajweed Rules Reference */}
-        <Card className="shadow-lg border-none">
-          <CardHeader
-            className="bg-gradient-to-r from-indigo-50 to-purple-50 cursor-pointer"
-            onClick={() => setShowRules(!showRules)}
-          >
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-indigo-600" />
-                Règles de Tajweed
-              </span>
-              <ChevronRight className={cn(
-                "w-5 h-5 text-indigo-600 transition-transform",
-                showRules && "rotate-90"
-              )} />
-            </CardTitle>
-          </CardHeader>
-          {showRules && (
-            <CardContent className="p-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {TAJWEED_RULES.map((rule) => (
-                  <div key={rule.id} className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
-                    <h3 className="font-bold text-indigo-900 mb-2">{rule.title}</h3>
-                    <p className="text-sm text-indigo-700 mb-2">{rule.description}</p>
-                    <p className="text-lg font-serif text-right text-indigo-800" dir="rtl">
-                      {rule.example}
+              {/* Traduction verset par verset */}
+              {result.verses && result.verses.length > 0 && (
+                <PCard className="p-4">
+                  <div className="flex items-center gap-2 px-1 pb-1">
+                    <Languages className="h-4 w-4 text-gold-600" strokeWidth={1.75} />
+                    <p className="text-caption uppercase text-gold-600">
+                      Traduction · Muhammad Hamidullah
                     </p>
                   </div>
-                ))}
-              </div>
-              <div className="mt-6 bg-amber-50 rounded-xl p-4 border border-amber-200">
-                <p className="text-sm text-amber-800">
-                  <strong>Note importante:</strong> Ces règles sont basées sur les ouvrages de référence
-                  reconnus par les savants : Al-Muqaddima al-Jazariyya, Tuhfat al-Atfal, et les enseignements
-                  des Qaris certifiés d'Al-Azhar.
-                </p>
-              </div>
-            </CardContent>
+                  <div className="mt-1 space-y-2">
+                    {result.verses.map((verse) => (
+                      <div key={`${verse.surah}:${verse.ayah}`} className="rounded-tile bg-ivory p-4">
+                        <p className="text-caption uppercase text-faint">
+                          Sourate {verse.surah} · Verset {verse.ayah}
+                        </p>
+                        <p className="mt-2 font-quran text-lg leading-[1.9] text-ink" dir="rtl">
+                          {verse.arabic}
+                        </p>
+                        <p className="mt-1.5 text-footnote italic text-muted-warm">
+                          « {verse.french} »
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </PCard>
+              )}
+
+              {/* Règles bien appliquées */}
+              {result.correct_rules && result.correct_rules.length > 0 && (
+                <PCard>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-forest" strokeWidth={1.75} />
+                    <p className="text-caption uppercase text-forest">Bien récité</p>
+                  </div>
+                  <div className="mt-3 space-y-3">
+                    {result.correct_rules.map((r, i) => (
+                      <div key={i} className="rounded-tile bg-forest-50 p-3.5">
+                        <p className="text-callout font-semibold text-forest">{r.rule}</p>
+                        <p className="mt-0.5 text-footnote text-ink/70">{r.description}</p>
+                        {r.location && (
+                          <p className="mt-1 font-quran text-base text-ink" dir="rtl">{r.location}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </PCard>
+              )}
+
+              {/* Points à corriger */}
+              {result.errors && result.errors.length > 0 && (
+                <PCard>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-warning" strokeWidth={1.75} />
+                    <p className="text-caption uppercase text-warning">À travailler</p>
+                  </div>
+                  <div className="mt-3 space-y-3">
+                    {result.errors.map((e, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          'rounded-tile border-l-2 bg-ivory p-3.5',
+                          e.severity === 'critical'
+                            ? 'border-l-danger'
+                            : e.severity === 'important'
+                              ? 'border-l-warning'
+                              : 'border-l-gold'
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-callout font-semibold text-ink">{e.type}</p>
+                          {e.severity && (
+                            <span
+                              className={cn(
+                                'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                                e.severity === 'critical'
+                                  ? 'bg-danger/10 text-danger'
+                                  : e.severity === 'important'
+                                    ? 'bg-warning/10 text-warning'
+                                    : 'bg-gold-200/60 text-bronze'
+                              )}
+                            >
+                              {e.severity === 'critical'
+                                ? 'Critique'
+                                : e.severity === 'important'
+                                  ? 'Important'
+                                  : 'Mineur'}
+                            </span>
+                          )}
+                        </div>
+                        {e.location && (
+                          <p className="mt-1.5 font-quran text-lg text-ink" dir="rtl">{e.location}</p>
+                        )}
+                        <p className="mt-1.5 text-footnote text-ink/75">{e.correction}</p>
+                        {e.rule && (
+                          <p className="mt-1.5 text-[11px] font-medium text-bronze">
+                            Règle : {e.rule}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </PCard>
+              )}
+
+              {/* Conseils */}
+              {result.advice && result.advice.length > 0 && (
+                <PCard variant="gold">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-bronze" strokeWidth={1.75} />
+                    <p className="text-caption uppercase text-bronze">Conseils du coach</p>
+                  </div>
+                  <ul className="mt-3 space-y-2">
+                    {result.advice.map((tip, i) => (
+                      <li key={i} className="flex items-start gap-2 text-footnote text-ink/80">
+                        <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-gold-600" />
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                  {result.sources && (
+                    <p className="mt-4 border-t border-gold/20 pt-3 text-[11px] text-bronze/80">
+                      Sources : {result.sources.join(' · ')}
+                    </p>
+                  )}
+                </PCard>
+              )}
+            </>
           )}
-        </Card>
-      </div>
-    </div>
+        </motion.div>
+      )}
+
+      {/* ── Règles de Tajwid (référence) ───────────────── */}
+      <motion.div variants={itemVariants} className="mt-4">
+        <PCard className="p-4" onClick={() => setShowRules(!showRules)}>
+          <div className="flex cursor-pointer items-center justify-between px-1">
+            <div className="flex items-center gap-2.5">
+              <BookOpen className="h-[18px] w-[18px] text-bronze" strokeWidth={1.75} />
+              <p className="text-headline text-ink">Règles de Tajwid</p>
+            </div>
+            <ChevronRight
+              className={cn(
+                'h-4 w-4 text-faint transition-transform duration-300',
+                showRules && 'rotate-90'
+              )}
+              strokeWidth={1.75}
+            />
+          </div>
+          <AnimatePresence>
+            {showRules && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 space-y-2">
+                  {TAJWEED_RULES.map((rule) => (
+                    <div key={rule.id} className="rounded-tile bg-ivory p-3.5">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="text-callout font-semibold text-ink">{rule.title}</p>
+                        <p className="font-quran text-base text-gold-600" dir="rtl">{rule.example}</p>
+                      </div>
+                      <p className="mt-0.5 text-footnote text-muted-warm">{rule.description}</p>
+                    </div>
+                  ))}
+                  <p className="px-1 pt-1 text-[11px] leading-relaxed text-faint">
+                    D'après Al-Muqaddima al-Jazariyya et Tuhfat al-Atfal.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </PCard>
+      </motion.div>
+    </Screen>
   );
 }

@@ -1,64 +1,115 @@
+/* SAKINA Design System — voir DESIGN_SYSTEM.md */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    /* Palette SAKINA appliquée aux variables shadcn :
+       toutes les surfaces de l'app héritent des neutres chauds. */
+    --background: 43 28% 95%;            /* ivory #F6F4EF */
+    --foreground: 34 14% 10%;            /* ink #1D1A16 */
+    --card: 45 33% 97%;                  /* ivory-50 #FBFAF7 */
+    --card-foreground: 34 14% 10%;
+    --popover: 45 33% 97%;
+    --popover-foreground: 34 14% 10%;
+    --primary: 167 72% 20%;              /* forest #0E5648 */
+    --primary-foreground: 45 33% 97%;
+    --secondary: 40 27% 91%;             /* sand #EFEBE3 */
+    --secondary-foreground: 34 14% 10%;
+    --muted: 40 27% 91%;
+    --muted-foreground: 33 9% 44%;       /* muted-warm #797065 */
+    --accent: 43 49% 83%;                /* gold-200 #E9DDBF */
+    --accent-foreground: 38 32% 41%;     /* bronze #8A7147 */
+    --destructive: 8 58% 44%;            /* danger #B3402F */
+    --destructive-foreground: 45 33% 97%;
+    --border: 39 25% 89%;                /* hairline #EAE5DC */
+    --input: 39 25% 89%;
+    --ring: 41 43% 58%;                  /* gold #C2A566 */
+    --radius: 0.875rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 34 14% 8%;
+    --foreground: 45 33% 95%;
+    --card: 33 12% 13%;                  /* ink-800 */
+    --card-foreground: 45 33% 95%;
+    --popover: 33 12% 13%;
+    --popover-foreground: 45 33% 95%;
+    --primary: 41 43% 58%;               /* gold devient primaire en sombre */
+    --primary-foreground: 34 14% 8%;
+    --secondary: 33 12% 16%;
+    --secondary-foreground: 45 33% 95%;
+    --muted: 33 12% 16%;
+    --muted-foreground: 36 12% 62%;
+    --accent: 33 12% 18%;
+    --accent-foreground: 43 49% 83%;
+    --destructive: 8 58% 50%;
+    --destructive-foreground: 45 33% 97%;
+    --border: 33 10% 20%;
+    --input: 33 10% 20%;
+    --ring: 41 43% 58%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04";
+  }
+
+  /* Texte coranique */
+  .text-quran {
+    font-family: 'Amiri', serif;
+    line-height: 2.2;
+    direction: rtl;
+    text-align: right;
+    font-weight: 400;
+  }
+
+  /* Chiffres alignés (horaires, stats) */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Scrollbar discrète */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D8D2C6;
+    border-radius: 3px;
+  }
+
+  /* Masquer la scrollbar des carrousels horizontaux */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Zone sûre mobile */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
-/* Effet Flip 3D pour les cartes */
+/* Effet Flip 3D pour les cartes (conservé pour les écrans existants) */
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;

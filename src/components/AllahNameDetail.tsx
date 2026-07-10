@@ -70,7 +70,7 @@ export default function AllahNameDetail({ name, onClose, isFavorite, onToggleFav
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#0d9488] to-[#0f766e] rounded-xl flex items-center justify-center text-white font-bold">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#0E5648] to-[#0B4A3E] rounded-xl flex items-center justify-center text-white font-bold">
                   {name.number}
                 </div>
                 <Button
@@ -85,7 +85,7 @@ export default function AllahNameDetail({ name, onClose, isFavorite, onToggleFav
                   <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
                 </Button>
               </div>
-              <CardTitle className="text-4xl font-serif text-[#0d9488] mb-2">
+              <CardTitle className="text-4xl font-serif text-[#0E5648] mb-2">
                 {name.arabic}
               </CardTitle>
               <p className="text-xl text-gray-700 font-medium">{name.transliteration}</p>
@@ -101,7 +101,7 @@ export default function AllahNameDetail({ name, onClose, isFavorite, onToggleFav
           {/* Explication */}
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-[#0d9488]" />
+              <BookOpen className="w-5 h-5 text-[#0E5648]" />
               Explication
             </h3>
             <p className="text-gray-700 leading-relaxed">{detail.explanation}</p>

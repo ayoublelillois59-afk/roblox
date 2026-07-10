@@ -12,6 +12,7 @@ import QuranPage from './pages/Quran';
 import SettingsPage from './pages/Settings';
 import TajweedPage from './pages/Tajweed';
 import ProfilePage from './pages/Profile';
+import ProgressionPage from './pages/Progression';
 import LoadingScreen from './pages/LoadingScreen';
 import ApiConfig from './pages/ApiConfig';
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/tajweed" element={<TajweedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/progression" element={<ProgressionPage />} />
           <Route path="/loading" element={<LoadingScreen />} />
           <Route path="/api-config" element={<ApiConfig />} />
         </Routes>

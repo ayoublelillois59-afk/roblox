@@ -828,15 +828,15 @@ export default function AllahNames() {
             >
               <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
                 {/* Recto - Nom */}
-                <Card className="absolute w-full h-full backface-hidden hover:shadow-xl transition-shadow border-2 border-[#0d9488]/20 hover:border-[#0d9488]/40">
-                  <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#0d9488]/5 to-emerald-50">
-                    <Badge className="mb-2 bg-[#0d9488] text-white border-none text-xs">
+                <Card className="absolute w-full h-full backface-hidden hover:shadow-xl transition-shadow border-2 border-[#0E5648]/20 hover:border-[#0E5648]/40">
+                  <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#0E5648]/5 to-emerald-50">
+                    <Badge className="mb-2 bg-[#0E5648] text-white border-none text-xs">
                       #{name.number}
                     </Badge>
-                    <div className="text-4xl md:text-5xl font-serif text-[#0d9488] mb-3 leading-relaxed">{name.arabic}</div>
+                    <div className="text-4xl md:text-5xl font-serif text-[#0E5648] mb-3 leading-relaxed">{name.arabic}</div>
                     <h3 className="text-lg font-bold text-gray-800 mb-1">{name.transliteration}</h3>
                     <p className="text-sm text-gray-600 font-medium">{name.meaning}</p>
-                    <p className="text-xs text-[#0d9488] mt-3 opacity-60">Cliquer pour voir l'explication</p>
+                    <p className="text-xs text-[#0E5648] mt-3 opacity-60">Cliquer pour voir l'explication</p>
                   </CardContent>
                 </Card>
 
@@ -844,11 +844,11 @@ export default function AllahNames() {
                 <Card className="absolute w-full h-full backface-hidden rotate-y-180 hover:shadow-xl transition-shadow border-2 border-amber-200">
                   <CardContent className="p-4 h-full overflow-y-auto bg-gradient-to-br from-amber-50 to-orange-50">
                     <div className="mb-3">
-                      <Badge className="bg-[#0d9488] text-white border-none text-xs mb-2">
+                      <Badge className="bg-[#0E5648] text-white border-none text-xs mb-2">
                         #{name.number} - {name.transliteration}
                       </Badge>
                       <h4 className="font-bold text-gray-800 text-sm flex items-center gap-1 mb-2">
-                        <BookOpen className="w-4 h-4 text-[#0d9488]" />
+                        <BookOpen className="w-4 h-4 text-[#0E5648]" />
                         Explication
                       </h4>
                       <p className="text-xs text-gray-700 leading-relaxed mb-3">
@@ -864,7 +864,7 @@ export default function AllahNames() {
                         {name.verse}
                       </p>
                     </div>
-                    <p className="text-xs text-center text-[#0d9488] mt-3 opacity-60">Cliquer pour retourner</p>
+                    <p className="text-xs text-center text-[#0E5648] mt-3 opacity-60">Cliquer pour retourner</p>
                   </CardContent>
                 </Card>
               </div>

@@ -15,7 +15,7 @@ export default function Logo({ size = "md", showText = true }: LogoProps) {
   return (
     <div className="flex items-center gap-3">
       <div className={cn(
-        "rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] flex items-center justify-center shadow-lg",
+        "rounded-2xl bg-gradient-to-br from-[#0E5648] to-[#0B4A3E] flex items-center justify-center shadow-lg",
         sizes[size].container
       )}>
         <div className="text-white font-serif font-bold" style={{ fontSize: size === 'sm' ? '1rem' : size === 'md' ? '1.5rem' : '2rem' }}>

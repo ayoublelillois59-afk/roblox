@@ -179,7 +179,7 @@ export default function PremiumPage() {
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d9488]/5 via-white to-[#0d9488]/5 pb-24">
+    <div className="min-h-screen bg-ivory pb-28">
       {/* Header */}
       <div className="bg-gradient-to-br from-amber-500 via-yellow-500 to-orange-500 text-white">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
@@ -236,8 +236,8 @@ export default function PremiumPage() {
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Reading Program Card */}
-          <Card className="overflow-hidden border-2 border-[#0d9488]/20 hover:shadow-2xl transition-all group">
-            <CardHeader className="bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white p-6">
+          <Card className="overflow-hidden border-2 border-[#0E5648]/20 hover:shadow-2xl transition-all group">
+            <CardHeader className="bg-gradient-to-br from-[#0E5648] to-[#0B4A3E] text-white p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <PremiumBadge size="md" className="mb-3" />
@@ -262,7 +262,7 @@ export default function PremiumPage() {
                   <p className="text-sm opacity-90">Accès à vie</p>
                 </div>
                 <Button
-                  className="bg-white text-[#0d9488] hover:bg-gray-100"
+                  className="bg-white text-[#0E5648] hover:bg-gray-100"
                   onClick={() => setExpandedProgram(expandedProgram === 'reading' ? null : 'reading')}
                 >
                   {expandedProgram === 'reading' ? 'Masquer' : 'Voir le programme'}
@@ -275,14 +275,14 @@ export default function PremiumPage() {
             </CardHeader>
 
             {expandedProgram === 'reading' && (
-              <CardContent className="p-6 bg-gradient-to-b from-[#0d9488]/5 to-white">
+              <CardContent className="p-6 bg-gradient-to-b from-[#0E5648]/5 to-white">
                 {/* Modules */}
                 <div className="space-y-4 mb-6">
                   <h3 className="font-semibold text-lg text-gray-800">Programme détaillé</h3>
                   {ARABIC_READING_PROGRAM.modules.map((module, idx) => (
                     <div key={idx} className="bg-gray-50 rounded-xl p-4">
                       <div className="flex items-start gap-3 mb-2">
-                        <div className="w-8 h-8 bg-[#0d9488] text-white rounded-lg flex items-center justify-center font-bold flex-shrink-0">
+                        <div className="w-8 h-8 bg-[#0E5648] text-white rounded-lg flex items-center justify-center font-bold flex-shrink-0">
                           {idx + 1}
                         </div>
                         <div className="flex-1">
@@ -293,7 +293,7 @@ export default function PremiumPage() {
                       <ul className="ml-11 space-y-1">
                         {module.lessons.map((lesson, i) => (
                           <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                            <CheckCircle2 className="w-4 h-4 text-[#0d9488] flex-shrink-0 mt-0.5" />
+                            <CheckCircle2 className="w-4 h-4 text-[#0E5648] flex-shrink-0 mt-0.5" />
                             <span>{lesson}</span>
                           </li>
                         ))}
@@ -325,7 +325,7 @@ export default function PremiumPage() {
 
                 {/* CTA */}
                 <div className="flex items-center gap-4">
-                  <Button className="flex-1 bg-[#0d9488] hover:bg-[#0f766e] h-12 text-lg">
+                  <Button className="flex-1 bg-[#0E5648] hover:bg-[#0B4A3E] h-12 text-lg">
                     <Crown className="w-5 h-5 mr-2" />
                     S'inscrire maintenant
                   </Button>
@@ -469,8 +469,8 @@ export default function PremiumPage() {
             </h3>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#0d9488]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Award className="w-8 h-8 text-[#0d9488]" />
+                <div className="w-16 h-16 bg-[#0E5648]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Award className="w-8 h-8 text-[#0E5648]" />
                 </div>
                 <h4 className="font-semibold mb-2">Enseignants Qualifiés</h4>
                 <p className="text-sm text-gray-600">
@@ -478,8 +478,8 @@ export default function PremiumPage() {
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#0d9488]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle2 className="w-8 h-8 text-[#0d9488]" />
+                <div className="w-16 h-16 bg-[#0E5648]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 className="w-8 h-8 text-[#0E5648]" />
                 </div>
                 <h4 className="font-semibold mb-2">100% Authentique</h4>
                 <p className="text-sm text-gray-600">
@@ -487,8 +487,8 @@ export default function PremiumPage() {
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#0d9488]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-8 h-8 text-[#0d9488]" />
+                <div className="w-16 h-16 bg-[#0E5648]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-8 h-8 text-[#0E5648]" />
                 </div>
                 <h4 className="font-semibold mb-2">Communauté Active</h4>
                 <p className="text-sm text-gray-600">

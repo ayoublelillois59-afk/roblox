@@ -18,9 +18,9 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d9488]/5 via-white to-[#0d9488]/5 pb-20">
+    <div className="min-h-screen bg-ivory pb-28">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white">
+      <div className="bg-gradient-to-r from-[#0E5648] to-[#0B4A3E] text-white">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link to={createPageUrl('Home')}>
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
@@ -39,7 +39,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-[#0d9488]" />
+              <Bell className="w-5 h-5 text-[#0E5648]" />
               Notifications
             </CardTitle>
           </CardHeader>
@@ -71,7 +71,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Moon className="w-5 h-5 text-[#0d9488]" />
+              <Moon className="w-5 h-5 text-[#0E5648]" />
               Apparence
             </CardTitle>
           </CardHeader>
@@ -94,7 +94,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-[#0d9488]" />
+              <Globe className="w-5 h-5 text-[#0E5648]" />
               Langue
             </CardTitle>
           </CardHeader>
@@ -116,7 +116,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Volume2 className="w-5 h-5 text-[#0d9488]" />
+              <Volume2 className="w-5 h-5 text-[#0E5648]" />
               Audio
             </CardTitle>
           </CardHeader>
@@ -138,7 +138,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Download className="w-5 h-5 text-[#0d9488]" />
+              <Download className="w-5 h-5 text-[#0E5648]" />
               Téléchargements
             </CardTitle>
           </CardHeader>

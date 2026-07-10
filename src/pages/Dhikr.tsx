@@ -6,9 +6,9 @@ import DhikrCounter from "@/components/DhikrCounter";
 
 export default function DhikrPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-20">
+    <div className="min-h-screen bg-ivory pb-28">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-ivory-50/85 backdrop-blur-xl border-b border-hairline sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link to={createPageUrl('Home')}>
             <Button variant="ghost" size="icon">

@@ -386,7 +386,7 @@ export default function PrayerTimes() {
                       className={cn(
                         "flex items-center justify-between p-4 rounded-2xl transition-all",
                         isNext
-                          ? "bg-[#0d9488]/10 border-2 border-[#0d9488]/30"
+                          ? "bg-[#0E5648]/10 border-2 border-[#0E5648]/30"
                           : "bg-gray-50 hover:bg-gray-100"
                       )}
                     >
@@ -405,12 +405,12 @@ export default function PrayerTimes() {
                       <div className="text-right">
                         <p className={cn(
                           "text-xl font-bold",
-                          isNext ? "text-[#0d9488]" : "text-gray-700"
+                          isNext ? "text-[#0E5648]" : "text-gray-700"
                         )}>
                           {prayerTimes?.[key] || '--:--'}
                         </p>
                         {isNext && (
-                          <p className="text-xs text-[#0d9488]">Prochaine</p>
+                          <p className="text-xs text-[#0E5648]">Prochaine</p>
                         )}
                       </div>
                     </div>
@@ -425,7 +425,7 @@ export default function PrayerTimes() {
       {/* Qibla Finder Section */}
       <div id="qibla-finder" className="scroll-mt-6">
         <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <MapPin className="w-6 h-6 text-[#0d9488]" />
+          <MapPin className="w-6 h-6 text-[#0E5648]" />
           Direction de la Qibla
         </h3>
         <QiblaCompass />

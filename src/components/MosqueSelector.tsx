@@ -47,7 +47,7 @@ export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: Mos
       </div>
 
       {showAddForm && (
-        <Card className="bg-[#0d9488]/5 border-[#0d9488]/20">
+        <Card className="bg-[#0E5648]/5 border-[#0E5648]/20">
           <CardContent className="p-4">
             <p className="text-sm text-gray-600 mb-2">
               Pour ajouter votre mosquée, contactez-nous avec les informations suivantes :
@@ -58,7 +58,7 @@ export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: Mos
               <li>• Horaires de prière affichés</li>
               <li>• Contact de la mosquée (optionnel)</li>
             </ul>
-            <Button className="w-full bg-[#0d9488] hover:bg-[#0f766e]">
+            <Button className="w-full bg-[#0E5648] hover:bg-[#0B4A3E]">
               Contacter l'équipe
             </Button>
           </CardContent>
@@ -67,7 +67,7 @@ export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: Mos
 
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="w-8 h-8 border-4 border-[#0d9488] border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-4 border-[#0E5648] border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       ) : filteredMosques.length === 0 ? (
         <Card>
@@ -84,7 +84,7 @@ export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: Mos
               key={mosque.id}
               className={cn(
                 "cursor-pointer transition-all hover:shadow-md",
-                selectedMosqueId === mosque.id && "ring-2 ring-[#0d9488] bg-[#0d9488]/5"
+                selectedMosqueId === mosque.id && "ring-2 ring-[#0E5648] bg-[#0E5648]/5"
               )}
               onClick={() => onSelectMosque(mosque)}
             >
@@ -94,7 +94,7 @@ export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: Mos
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-gray-800">{mosque.name}</h3>
                       {mosque.verified && (
-                        <Badge variant="outline" className="text-xs bg-[#0d9488]/10 text-[#0d9488] border-[#0d9488]/20">
+                        <Badge variant="outline" className="text-xs bg-[#0E5648]/10 text-[#0E5648] border-[#0E5648]/20">
                           <CheckCircle2 className="w-3 h-3 mr-1" />
                           Vérifiée
                         </Badge>
@@ -121,7 +121,7 @@ export default function MosqueSelector({ selectedMosqueId, onSelectMosque }: Mos
                     </div>
                   </div>
                   {selectedMosqueId === mosque.id && (
-                    <div className="w-8 h-8 bg-[#0d9488] rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-[#0E5648] rounded-full flex items-center justify-center">
                       <CheckCircle2 className="w-5 h-5 text-white" />
                     </div>
                   )}

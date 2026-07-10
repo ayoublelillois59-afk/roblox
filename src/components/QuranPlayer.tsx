@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
+import { motion } from 'framer-motion';
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem } from "@/components/ui/select";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Heart } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -232,7 +231,7 @@ export default function QuranPlayer({ onFavorite, favorites = [] }: QuranPlayerP
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#0d9488] via-[#0f766e] to-[#0d9488] rounded-3xl p-8 text-white shadow-2xl">
+    <div className="overflow-hidden rounded-card bg-ink text-ivory-50 shadow-soft">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
@@ -241,140 +240,139 @@ export default function QuranPlayer({ onFavorite, favorites = [] }: QuranPlayerP
         onCanPlay={() => setIsLoading(false)}
       />
 
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-block px-4 py-1 bg-white/10 rounded-full text-sm mb-4">
-          القرآن الكريم
-        </div>
-        <h2 className="text-4xl font-bold mb-2" style={{ fontFamily: 'serif' }}>
-          {currentSurah.nameAr}
-        </h2>
-        <p className="text-emerald-200">
-          Sourate {currentSurah.name} • {currentSurah.verses} versets
-        </p>
-      </div>
-
-      {/* Selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div>
-          <label className="text-sm text-emerald-200 mb-2 block">Récitateur</label>
-          <Select value={selectedReciter} onValueChange={setSelectedReciter} className="bg-white border-gray-200 text-gray-900">
-            <SelectContent>
-              {RECITERS.map(reciter => (
-                <SelectItem key={reciter.id} value={reciter.id} className="text-gray-900 bg-white">
-                  {reciter.name} ({reciter.country})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm text-emerald-200 mb-2 block">Sourate</label>
-          <Select value={String(selectedSurah)} onValueChange={(v) => setSelectedSurah(Number(v))} className="bg-white border-gray-200 text-gray-900">
-            <SelectContent>
-              {SURAHS.map(surah => (
-                <SelectItem key={surah.number} value={String(surah.number)} className="text-gray-900 bg-white">
-                  {surah.number}. {surah.name} - {surah.nameAr}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* En-tête : cadre orné */}
+      <div className="px-6 pb-2 pt-8 text-center">
+        <div className="mx-auto max-w-[250px] rounded-tile border border-gold/30 px-6 py-5">
+          <p className="text-caption uppercase text-gold/70">القرآن الكريم</p>
+          <h2 className="mt-2 font-quran text-4xl text-ivory-50">{currentSurah.nameAr}</h2>
+          <p className="mt-1.5 text-footnote text-ivory-50/60">
+            {currentSurah.name} · {currentSurah.verses} versets
+          </p>
         </div>
       </div>
 
-      {/* Progress */}
-      <div className="mb-6">
+      {/* Sélecteurs */}
+      <div className="grid grid-cols-2 gap-3 px-6 pt-5">
+        <div>
+          <label className="mb-1.5 block text-caption uppercase text-ivory-50/40">Récitateur</label>
+          <select
+            value={selectedReciter}
+            onChange={(e) => setSelectedReciter(e.target.value)}
+            className="w-full rounded-control border border-ivory-50/15 bg-ink-800 px-3 py-2 text-footnote text-ivory-50 outline-none"
+          >
+            {RECITERS.map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-caption uppercase text-ivory-50/40">Sourate</label>
+          <select
+            value={selectedSurah}
+            onChange={(e) => setSelectedSurah(Number(e.target.value))}
+            className="w-full rounded-control border border-ivory-50/15 bg-ink-800 px-3 py-2 text-footnote text-ivory-50 outline-none"
+          >
+            {SURAHS.map((s) => (
+              <option key={s.number} value={s.number}>{s.number}. {s.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Progression */}
+      <div className="px-6 pt-6">
         <Slider
           value={[currentTime]}
           max={duration || 100}
           step={1}
           onValueChange={handleSeek}
-          className="mb-2"
         />
-        <div className="flex justify-between text-sm text-emerald-200">
+        <div className="tnum mt-2 flex justify-between text-[11px] text-ivory-50/50">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
+      {/* Contrôles */}
+      <div className="flex items-center justify-center gap-5 px-6 pt-2">
+        <button
           onClick={() => onFavorite?.(selectedSurah)}
-          className={cn("text-white hover:bg-white/10", isFavorite && "text-yellow-400")}
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+            isFavorite ? 'text-gold' : 'text-ivory-50/50'
+          )}
+          aria-label="Favori"
         >
-          <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
-        </Button>
+          <Heart className={cn('h-5 w-5', isFavorite && 'fill-current')} strokeWidth={1.75} />
+        </button>
 
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={prevSurah}
-          className="text-white hover:bg-white/10"
           disabled={selectedSurah === 1}
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ivory-50/80 disabled:opacity-30"
+          aria-label="Sourate précédente"
         >
-          <SkipBack className="w-6 h-6" />
-        </Button>
+          <SkipBack className="h-5 w-5" strokeWidth={1.75} />
+        </button>
 
-        <Button
+        <motion.button
+          whileTap={{ scale: 0.94 }}
           onClick={togglePlay}
           disabled={isLoading}
-          className="w-16 h-16 rounded-full bg-white text-emerald-800 hover:bg-emerald-100 shadow-lg"
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-gold text-ink shadow-glow-gold"
+          aria-label={isPlaying ? 'Pause' : 'Lecture'}
         >
           {isLoading ? (
-            <div className="w-6 h-6 border-2 border-emerald-800 border-t-transparent rounded-full animate-spin" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-ink border-t-transparent" />
           ) : isPlaying ? (
-            <Pause className="w-7 h-7" />
+            <Pause className="h-6 w-6 fill-current" strokeWidth={1.5} />
           ) : (
-            <Play className="w-7 h-7 ml-1" />
+            <Play className="ml-0.5 h-6 w-6 fill-current" strokeWidth={1.5} />
           )}
-        </Button>
+        </motion.button>
 
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={nextSurah}
-          className="text-white hover:bg-white/10"
           disabled={selectedSurah === 114}
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ivory-50/80 disabled:opacity-30"
+          aria-label="Sourate suivante"
         >
-          <SkipForward className="w-6 h-6" />
-        </Button>
+          <SkipForward className="h-5 w-5" strokeWidth={1.75} />
+        </button>
 
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={() => setIsRepeat(!isRepeat)}
-          className={cn("text-white hover:bg-white/10", isRepeat && "text-yellow-400")}
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+            isRepeat ? 'text-gold' : 'text-ivory-50/50'
+          )}
+          aria-label="Répéter"
         >
-          <Repeat className="w-5 h-5" />
-        </Button>
+          <Repeat className="h-[18px] w-[18px]" strokeWidth={1.75} />
+        </button>
       </div>
 
-      {/* Volume */}
-      <div className="flex items-center justify-center gap-3 mt-6">
-        <Button
-          variant="ghost"
-          size="icon"
+      {/* Volume + récitateur */}
+      <div className="flex items-center justify-center gap-3 px-6 pt-4">
+        <button
           onClick={() => setIsMuted(!isMuted)}
-          className="text-white hover:bg-white/10"
+          className="text-ivory-50/50"
+          aria-label="Couper le son"
         >
-          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-        </Button>
+          {isMuted ? <VolumeX className="h-[18px] w-[18px]" strokeWidth={1.75} /> : <Volume2 className="h-[18px] w-[18px]" strokeWidth={1.75} />}
+        </button>
         <Slider
           value={[isMuted ? 0 : volume]}
           max={100}
           step={1}
           onValueChange={(v) => { setVolume(v[0]); setIsMuted(false); }}
-          className="w-32"
+          className="w-28"
         />
       </div>
 
-      {/* Current Reciter Info */}
-      <div className="mt-6 text-center text-sm text-emerald-200">
-        <p>{currentReciter.nameAr}</p>
-        <p className="text-xs opacity-70">{currentReciter.name}</p>
+      <div className="border-t border-ivory-50/10 px-6 py-4 text-center">
+        <p className="font-quran text-base text-gold/80" dir="rtl">{currentReciter.nameAr}</p>
+        <p className="mt-0.5 text-[11px] text-ivory-50/40">{currentReciter.name} · {currentReciter.country}</p>
       </div>
     </div>
   );
