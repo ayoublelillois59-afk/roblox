@@ -101,7 +101,7 @@ export default {
 
     // Petit health-check pour vérifier que le Worker est en ligne
     if (request.method === 'GET') {
-      return json({ status: 'ok', service: 'Muslim Pro Tajweed AI' }, 200, origin);
+      return json({ status: 'ok', service: 'Muslim Pro Tajweed AI', version: 'v2-whisper-base' }, 200, origin);
     }
 
     if (request.method !== 'POST') {
