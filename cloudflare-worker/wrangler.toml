@@ -1,0 +1,13 @@
+name = "muslim-pro-tajweed-ai"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Liaison vers l'IA de Cloudflare (Workers AI).
+# C'est ça qui rend l'IA GRATUITE et intégrée : pas de clé OpenAI, rien à payer.
+[ai]
+binding = "AI"
+
+# Optionnel : autoriser uniquement ton app à appeler le Worker.
+# Laisse "*" pour tester, puis remplace par ton domaine (ex: https://mon-app.pages.dev)
+[vars]
+ALLOWED_ORIGIN = "*"
