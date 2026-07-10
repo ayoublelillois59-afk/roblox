@@ -9,8 +9,8 @@
  *   OU définis la variable d'environnement VITE_TAJWEED_API_URL.
  */
 
-// ⚠️ Mets ici l'URL de ton Worker Cloudflare (donnée par `wrangler deploy`)
-const DEFAULT_WORKER_URL = 'https://muslim-pro-tajweed-ai.workers.dev';
+// URL du Worker Cloudflare (IA Tajweed intégrée et gratuite)
+const DEFAULT_WORKER_URL = 'https://tajweedia.ayoublelillois59.workers.dev';
 
 const WORKER_URL =
   (import.meta.env.VITE_TAJWEED_API_URL as string | undefined) || DEFAULT_WORKER_URL;
