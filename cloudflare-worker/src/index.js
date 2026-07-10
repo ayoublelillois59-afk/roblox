@@ -11,8 +11,10 @@
  */
 
 // ── Modèles utilisés ──────────────────────────────────────────────
-// Meilleur Whisper gratuit de Cloudflare (excellent pour l'arabe)
-const WHISPER_MODEL = '@cf/openai/whisper-large-v3-turbo';
+// Whisper de base : modèle actif qui gère l'arabe. (Le modèle "turbo" a
+// été supprimé par Cloudflare le 2026-05-30.) Il prend l'audio sous forme
+// de tableau d'octets, pas de base64 → on convertit plus bas.
+const WHISPER_MODEL = '@cf/openai/whisper';
 // Meilleur modèle de texte gratuit fiable. Pour plus de qualité tu peux
 // tester : '@cf/meta/llama-3.3-70b-instruct-fp8-fast' (change juste cette ligne)
 const LLM_MODEL = '@cf/meta/llama-3.1-8b-instruct';
@@ -115,10 +117,14 @@ export default {
       }
 
       // ── 1. Transcription de l'audio arabe (Whisper) ──────────────
+      // Le modèle @cf/openai/whisper attend un tableau d'octets.
+      // On décode donc le base64 reçu en octets.
+      const binary = atob(base64Audio);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
       const whisperResult = await env.AI.run(WHISPER_MODEL, {
-        audio: base64Audio,
-        language: 'ar',
-        task: 'transcribe',
+        audio: Array.from(bytes),
       });
 
       const arabicText = (whisperResult && (whisperResult.text || whisperResult.transcription) || '').trim();
