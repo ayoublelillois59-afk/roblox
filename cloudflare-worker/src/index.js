@@ -1,25 +1,22 @@
 /**
- * Muslim Pro - Worker Cloudflare : Analyse Tajweed par IA (100% gratuit)
+ * Muslim Pro - Worker Cloudflare : Analyse Tajweed par IA (gratuit via Groq)
  *
- * Ce Worker fait DEUX choses avec l'IA intégrée de Cloudflare (Workers AI) :
- *   1. Transcription de l'audio arabe   -> modèle Whisper
- *   2. Analyse du Tajweed + conseils     -> modèle Llama
+ * Cloudflare a supprimé ses modèles Whisper (plus d'arabe). On utilise donc
+ * Groq (gratuit, 2000 req/jour) qui fait tout en excellente qualité :
+ *   1. Transcription arabe  -> whisper-large-v3
+ *   2. Analyse du Tajweed    -> llama-3.3-70b-versatile
  *
- * L'utilisateur de l'app n'a AUCUNE clé à mettre. Tout est ici, dans le backend.
+ * Le Worker garde la clé Groq SECRÈTE (variable GROQ_API_KEY).
+ * L'utilisateur de l'app n'a AUCUNE clé à mettre : tout est ici.
  *
- * Déploiement : voir README.md (npx wrangler deploy)
+ * ⚙️ À configurer une fois : ajoute la variable secrète GROQ_API_KEY dans
+ *    les réglages du Worker (Settings → Variables and Secrets).
  */
 
-// ── Modèles utilisés ──────────────────────────────────────────────
-// Whisper de base : modèle actif qui gère l'arabe. (Le modèle "turbo" a
-// été supprimé par Cloudflare le 2026-05-30.) Il prend l'audio sous forme
-// de tableau d'octets, pas de base64 → on convertit plus bas.
-const WHISPER_MODEL = '@cf/openai/whisper';
-// Meilleur modèle de texte gratuit fiable. Pour plus de qualité tu peux
-// tester : '@cf/meta/llama-3.3-70b-instruct-fp8-fast' (change juste cette ligne)
-const LLM_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+const GROQ_BASE = 'https://api.groq.com/openai/v1';
+const WHISPER_MODEL = 'whisper-large-v3';        // transcription arabe (gratuit)
+const LLM_MODEL = 'llama-3.3-70b-versatile';     // analyse Tajweed (gratuit, puissant)
 
-// ── Prompt du professeur de Tajweed ───────────────────────────────
 const SYSTEM_PROMPT = `Tu es un professeur de tajwīd du Saint Coran, précis et bienveillant.
 
 Analyse la récitation transcrite selon les règles reconnues du tajwīd :
@@ -30,8 +27,7 @@ Analyse la récitation transcrite selon les règles reconnues du tajwīd :
 
 RÈGLES STRICTES :
 - N'invente AUCUNE règle et ne donne AUCUNE fatwa.
-- Donne uniquement des remarques techniques.
-- Cite toujours la règle concernée.
+- Donne uniquement des remarques techniques et cite la règle concernée.
 - Sois encourageant : mentionne d'abord ce qui est bien.
 - Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour.`;
 
@@ -39,52 +35,39 @@ function buildUserPrompt(arabicText) {
   return `Voici la transcription d'une récitation coranique :
 "${arabicText}"
 
-Analyse-la et réponds EXACTEMENT avec cet objet JSON (rien d'autre) :
+Réponds EXACTEMENT avec cet objet JSON (rien d'autre) :
 {
   "overall_quality": "excellent" | "good" | "needs_improvement",
-  "correct_rules": [
-    { "rule": "Nom de la règle", "description": "Comment elle est bien appliquée", "location": "mot arabe concerné" }
-  ],
-  "errors": [
-    { "type": "Type d'erreur", "location": "mot arabe", "correction": "explication simple", "rule": "règle classique", "severity": "critical" | "important" | "minor" }
-  ],
+  "correct_rules": [ { "rule": "Nom de la règle", "description": "Comment elle est bien appliquée", "location": "mot arabe" } ],
+  "errors": [ { "type": "Type d'erreur", "location": "mot arabe", "correction": "explication simple", "rule": "règle classique", "severity": "critical" | "important" | "minor" } ],
   "advice": ["conseil pratique 1", "conseil pratique 2", "encouragement positif"],
   "sources": ["Al-Muqaddima al-Jazariyya", "Tuhfat al-Atfal"]
 }`;
 }
 
-// ── En-têtes CORS ─────────────────────────────────────────────────
-function corsHeaders(origin) {
+function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Max-Age': '86400',
   };
 }
 
-function json(data, status, origin) {
+function json(data, status) {
   return new Response(JSON.stringify(data), {
     status: status || 200,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders() },
   });
 }
 
-// Extrait le premier bloc JSON valide d'un texte (au cas où le modèle
-// ajoute du texte autour malgré la consigne).
 function extractJson(text) {
   if (!text) return null;
   try {
     return JSON.parse(text);
   } catch (_) {
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
-    if (start !== -1 && end !== -1 && end > start) {
-      try {
-        return JSON.parse(text.slice(start, end + 1));
-      } catch (_) {
-        return null;
-      }
+    const s = text.indexOf('{'), e = text.lastIndexOf('}');
+    if (s !== -1 && e > s) {
+      try { return JSON.parse(text.slice(s, e + 1)); } catch (_) { return null; }
     }
     return null;
   }
@@ -92,98 +75,94 @@ function extractJson(text) {
 
 export default {
   async fetch(request, env) {
-    const origin = env.ALLOWED_ORIGIN || '*';
-
-    // Pré-vol CORS
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
-    }
-
-    // Petit health-check pour vérifier que le Worker est en ligne
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders() });
     if (request.method === 'GET') {
-      return json({ status: 'ok', service: 'Muslim Pro Tajweed AI', version: 'v2-whisper-base' }, 200, origin);
+      return json({ status: 'ok', service: 'Muslim Pro Tajweed AI', version: 'v3-groq' });
     }
+    if (request.method !== 'POST') return json({ error: 'Méthode non autorisée' }, 405);
 
-    if (request.method !== 'POST') {
-      return json({ error: 'Méthode non autorisée' }, 405, origin);
+    if (!env.GROQ_API_KEY) {
+      return json({ error: 'Configuration manquante', message: 'La variable GROQ_API_KEY n\'est pas configurée dans le Worker.' }, 500);
     }
 
     try {
       const body = await request.json();
       const base64Audio = body.audio;
+      if (!base64Audio) return json({ error: 'Audio manquant' }, 400);
 
-      if (!base64Audio) {
-        return json({ error: 'Audio manquant (champ "audio" en base64 requis)' }, 400, origin);
-      }
-
-      // ── 1. Transcription de l'audio arabe (Whisper) ──────────────
-      // Le modèle @cf/openai/whisper attend un tableau d'octets.
-      // On décode donc le base64 reçu en octets.
+      // Décoder le base64 (WAV) en octets
       const binary = atob(base64Audio);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-      const whisperResult = await env.AI.run(WHISPER_MODEL, {
-        audio: Array.from(bytes),
+      // ── 1. Transcription arabe (Groq Whisper) ────────────────────
+      const form = new FormData();
+      form.append('file', new Blob([bytes], { type: 'audio/wav' }), 'audio.wav');
+      form.append('model', WHISPER_MODEL);
+      form.append('language', 'ar');
+      form.append('response_format', 'json');
+
+      const trRes = await fetch(`${GROQ_BASE}/audio/transcriptions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${env.GROQ_API_KEY}` },
+        body: form,
       });
 
-      const arabicText = (whisperResult && (whisperResult.text || whisperResult.transcription) || '').trim();
-
-      if (!arabicText) {
-        return json({
-          error: 'Transcription vide',
-          message: "L'audio n'a pas pu être transcrit. Parle plus près du micro et réessaie.",
-        }, 422, origin);
+      if (!trRes.ok) {
+        const errText = await trRes.text();
+        return json({ error: 'Transcription échouée', message: errText.slice(0, 300) }, 502);
       }
 
-      // ── 2. Analyse du Tajweed (Llama) ────────────────────────────
-      const llmResult = await env.AI.run(LLM_MODEL, {
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: buildUserPrompt(arabicText) },
-        ],
-        temperature: 0.2,
-        max_tokens: 1500,
+      const trData = await trRes.json();
+      const arabicText = (trData.text || '').trim();
+      if (!arabicText) {
+        return json({ error: 'Transcription vide', message: 'Parle plus près du micro et réessaie.' }, 422);
+      }
+
+      // ── 2. Analyse du Tajweed (Groq Llama 70B) ───────────────────
+      const anRes = await fetch(`${GROQ_BASE}/chat/completions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: LLM_MODEL,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: buildUserPrompt(arabicText) },
+          ],
+          temperature: 0.2,
+          max_tokens: 1500,
+          response_format: { type: 'json_object' },
+        }),
       });
 
-      const rawText = llmResult && (llmResult.response || llmResult.result || '');
-      let analysis = extractJson(rawText);
+      let analysis = null;
+      if (anRes.ok) {
+        const anData = await anRes.json();
+        analysis = extractJson(anData.choices && anData.choices[0] && anData.choices[0].message.content);
+      }
 
-      // Filet de sécurité : si le modèle n'a pas rendu de JSON exploitable,
-      // on renvoie quand même la transcription avec un message clair.
       if (!analysis || typeof analysis !== 'object') {
         analysis = {
           overall_quality: 'good',
           correct_rules: [],
           errors: [],
-          advice: [
-            "L'analyse détaillée n'a pas pu être structurée cette fois-ci.",
-            'Voici la transcription de ta récitation pour vérification.',
-            'Réessaie avec un enregistrement un peu plus long et clair.',
-          ],
+          advice: ["L'analyse détaillée n'a pas pu être structurée cette fois.", 'Voici la transcription pour vérification.', 'Réessaie avec un enregistrement un peu plus long.'],
           sources: ['Al-Muqaddima al-Jazariyya'],
         };
       }
 
-      // Normalisation : on garantit que tous les champs existent
-      const safeAnalysis = {
-        overall_quality: analysis.overall_quality || 'good',
-        correct_rules: Array.isArray(analysis.correct_rules) ? analysis.correct_rules : [],
-        errors: Array.isArray(analysis.errors) ? analysis.errors : [],
-        advice: Array.isArray(analysis.advice) ? analysis.advice : [],
-        sources: Array.isArray(analysis.sources) ? analysis.sources : ['Al-Muqaddima al-Jazariyya'],
-      };
-
       return json({
         transcription: { text: arabicText, language: 'ar', duration: 0 },
-        analysis: safeAnalysis,
-      }, 200, origin);
-
+        analysis: {
+          overall_quality: analysis.overall_quality || 'good',
+          correct_rules: Array.isArray(analysis.correct_rules) ? analysis.correct_rules : [],
+          errors: Array.isArray(analysis.errors) ? analysis.errors : [],
+          advice: Array.isArray(analysis.advice) ? analysis.advice : [],
+          sources: Array.isArray(analysis.sources) ? analysis.sources : ['Al-Muqaddima al-Jazariyya'],
+        },
+      });
     } catch (err) {
-      return json({
-        error: "Erreur lors de l'analyse",
-        message: (err && err.message) || 'Erreur inconnue',
-      }, 500, origin);
+      return json({ error: "Erreur lors de l'analyse", message: (err && err.message) || 'Erreur inconnue' }, 500);
     }
   },
 };
