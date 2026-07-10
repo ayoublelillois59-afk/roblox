@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import {
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
 import { transcribeAndAnalyze, isOpenAIConfigured } from "@/services/cloudflare-ai";
-import { findVerseByArabicText, QuranVerse } from "@/data/quran-translations";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { getSurah, detectVerse, splitTranscriptionIntoVerses, getMatchIndex, FullVerse } from "@/services/quran-full";
 
 const TAJWEED_RULES = [
   {
@@ -60,7 +61,7 @@ interface TajweedResult {
   }>;
   advice?: string[];
   sources?: string[];
-  identifiedVerse?: QuranVerse | null;
+  verses?: FullVerse[];
 }
 
 export default function TajweedPage() {
@@ -69,14 +70,52 @@ export default function TajweedPage() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<TajweedResult | null>(null);
   const [showRules, setShowRules] = useState(true);
-  const [liveTranslation, setLiveTranslation] = useState<QuranVerse | null>(null);
+  const [liveVerses, setLiveVerses] = useState<FullVerse[]>([]);
   const [apiConfigured, setApiConfigured] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const lastVerseRef = useRef<string>('');
+  const liveScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setApiConfigured(isOpenAIConfigured());
+    // Préchargement du Coran en arrière-plan (pour la détection en direct)
+    getMatchIndex().catch(() => { /* sera retenté au besoin */ });
   }, []);
+
+  // Détection en direct du verset récité → traduction qui défile
+  const handleSpeech = useCallback(async (text: string, isFinal: boolean) => {
+    if (!isFinal) return;
+    try {
+      const ref = await detectVerse(text);
+      if (!ref) return;
+      const key = `${ref.surah}:${ref.ayah}`;
+      if (key === lastVerseRef.current) return;
+      lastVerseRef.current = key;
+
+      const surah = await getSurah(ref.surah);
+      const verse = surah.find(v => v.ayah === ref.ayah);
+      if (!verse) return;
+
+      setLiveVerses(prev =>
+        prev.some(v => v.surah === verse.surah && v.ayah === verse.ayah)
+          ? prev
+          : [...prev, verse]
+      );
+    } catch (_) {
+      /* détection best-effort : on ignore les erreurs */
+    }
+  }, []);
+
+  const { supported: speechSupported, start: startSpeech, stop: stopSpeech } =
+    useSpeechRecognition(handleSpeech);
+
+  // Auto-scroll de la traduction qui défile
+  useEffect(() => {
+    if (liveScrollRef.current) {
+      liveScrollRef.current.scrollTop = liveScrollRef.current.scrollHeight;
+    }
+  }, [liveVerses]);
 
   const startRecording = async () => {
     try {
@@ -99,6 +138,10 @@ export default function TajweedPage() {
       mediaRecorderRef.current.start();
       setIsRecording(true);
       setResult(null);
+      setLiveVerses([]);
+      lastVerseRef.current = '';
+      // Démarrage de la traduction en temps réel (si le navigateur le permet)
+      if (speechSupported) startSpeech();
     } catch (error) {
       console.error('Error accessing microphone:', error);
       alert('Erreur: Impossible d\'accéder au microphone. Veuillez autoriser l\'accès.');
@@ -109,54 +152,37 @@ export default function TajweedPage() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      stopSpeech();
     }
   };
 
   const analyzeRecording = async () => {
     if (!audioBlob) return;
 
-    if (!apiConfigured) {
-      setResult({
-        overall_quality: "cannot_analyze",
-        errors: [],
-        advice: [
-          "❌ Configuration manquante: Clé API OpenAI non configurée.",
-          "📝 Veuillez créer un fichier .env à la racine du projet",
-          "🔑 Ajoutez: VITE_OPENAI_API_KEY=votre_clé",
-          "🌐 Obtenez une clé sur: https://platform.openai.com/api-keys"
-        ]
-      });
-      setProcessing(false);
-      return;
-    }
-
     setProcessing(true);
-    setLiveTranslation(null);
 
     try {
-      // 1. Transcription + Analyse via OpenAI
+      // 1. Transcription + Analyse Tajweed (Groq via le Worker)
       const { transcription, analysis } = await transcribeAndAnalyze(audioBlob);
 
-      // 2. Identification du verset dans notre base de données
-      const identifiedVerse = findVerseByArabicText(transcription.text);
+      // 2. Traduction verset par verset (sourate entière) via le Coran complet
+      let verses: FullVerse[] = [];
+      try {
+        verses = await splitTranscriptionIntoVerses(transcription.text);
+      } catch (_) {
+        /* traduction best-effort */
+      }
 
       // 3. Construire le résultat final
       setResult({
         arabic_text: transcription.text,
-        translation: identifiedVerse?.translationFr ||
-          "Traduction non disponible dans notre base de données. Verset non identifié.",
         overall_quality: analysis.overall_quality,
         correct_rules: analysis.correct_rules,
         errors: analysis.errors,
         advice: analysis.advice,
         sources: analysis.sources || ["Al-Muqaddima al-Jazariyya", "Tuhfat al-Atfal"],
-        identifiedVerse
+        verses,
       });
-
-      // 4. Afficher la traduction en direct
-      if (identifiedVerse) {
-        setLiveTranslation(identifiedVerse);
-      }
 
     } catch (error: any) {
       console.error('Error analyzing recording:', error);
@@ -319,36 +345,52 @@ export default function TajweedPage() {
           </CardContent>
         </Card>
 
-        {/* Live Translation Display - Shown during/after recording */}
-        {liveTranslation && (
+        {/* Traduction en temps réel qui défile pendant la récitation */}
+        {(isRecording || liveVerses.length > 0) && (
           <Card className="mb-6 shadow-lg border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-teal-50">
             <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
               <CardTitle className="flex items-center gap-2">
                 <Languages className="w-6 h-6" />
-                Verset Identifié - Traduction Authentique
+                Traduction en direct
+                {isRecording && speechSupported && (
+                  <span className="ml-2 flex items-center gap-1 text-xs font-normal bg-white/20 px-2 py-1 rounded-full">
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" /> en écoute
+                  </span>
+                )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div>
-                <Badge className="bg-emerald-100 text-emerald-700 border-none mb-3">
-                  Sourate {liveTranslation.surahNumber}: {liveTranslation.surahName} ({liveTranslation.surahNameArabic}) - Verset {liveTranslation.ayahNumber}
-                </Badge>
-                <div className="bg-white rounded-xl p-4 border border-emerald-200 mb-3">
-                  <p className="text-3xl font-serif text-right text-gray-800 leading-loose mb-3" dir="rtl">
-                    {liveTranslation.arabic}
-                  </p>
-                </div>
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
-                  <p className="text-sm text-gray-600 font-medium mb-1">Traduction Muhammad Hamidullah:</p>
-                  <p className="text-gray-800 italic leading-relaxed">
-                    "{liveTranslation.translationFr}"
-                  </p>
-                  {liveTranslation.transliterationFr && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Translittération: {liveTranslation.transliterationFr}
+            <CardContent className="p-4">
+              {isRecording && !speechSupported && (
+                <p className="text-sm text-amber-700 bg-amber-50 rounded-lg p-3 mb-3">
+                  La traduction en direct n'est pas disponible sur ce navigateur.
+                  La traduction complète s'affichera après l'analyse. (Astuce : utilise Chrome)
+                </p>
+              )}
+              {liveVerses.length === 0 && isRecording && speechSupported && (
+                <p className="text-sm text-gray-500 italic text-center py-4">
+                  Récite… la traduction de chaque verset apparaîtra ici.
+                </p>
+              )}
+              <div ref={liveScrollRef} className="max-h-80 overflow-y-auto space-y-3 scroll-smooth">
+                {liveVerses.map((verse, idx) => (
+                  <div
+                    key={`${verse.surah}:${verse.ayah}`}
+                    className={cn(
+                      "bg-white rounded-xl p-4 border transition-all",
+                      idx === liveVerses.length - 1
+                        ? "border-emerald-400 shadow-md ring-2 ring-emerald-200"
+                        : "border-emerald-100 opacity-80"
+                    )}
+                  >
+                    <Badge className="bg-emerald-100 text-emerald-700 border-none mb-2 text-xs">
+                      Sourate {verse.surah} · Verset {verse.ayah}
+                    </Badge>
+                    <p className="text-2xl font-serif text-right text-gray-800 leading-loose mb-2" dir="rtl">
+                      {verse.arabic}
                     </p>
-                  )}
-                </div>
+                    <p className="text-gray-700 italic leading-relaxed">"{verse.french}"</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -373,13 +415,10 @@ export default function TajweedPage() {
                   {/* Transcription */}
                   {result.arabic_text && (
                     <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">Transcription:</h3>
+                      <h3 className="font-semibold text-gray-800 mb-2">Ce que tu as récité (transcription):</h3>
                       <p className="text-2xl font-serif text-right text-gray-800 mb-2" dir="rtl">
                         {result.arabic_text}
                       </p>
-                      {result.translation && (
-                        <p className="text-gray-600 italic">"{result.translation}"</p>
-                      )}
                     </div>
                   )}
 
@@ -418,18 +457,28 @@ export default function TajweedPage() {
                     </div>
                   )}
 
-                  {/* Verset identifié */}
-                  {result.identifiedVerse && (
+                  {/* Traduction complète verset par verset (sourate entière) */}
+                  {result.verses && result.verses.length > 0 && (
                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-300">
                       <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                        <BookOpen className="w-5 h-5" />
-                        Verset Identifié
+                        <Languages className="w-5 h-5" />
+                        Traduction verset par verset
                       </h3>
-                      <Badge className="bg-emerald-600 text-white mb-2">
-                        Sourate {result.identifiedVerse.surahNumber}: {result.identifiedVerse.surahName} - Verset {result.identifiedVerse.ayahNumber}
-                      </Badge>
-                      <p className="text-xs text-emerald-700 mt-2">
-                        ✓ Traduction officielle Muhammad Hamidullah utilisée
+                      <div className="space-y-3">
+                        {result.verses.map((verse) => (
+                          <div key={`${verse.surah}:${verse.ayah}`} className="bg-white rounded-lg p-3 border border-emerald-200">
+                            <Badge className="bg-emerald-600 text-white mb-2 text-xs">
+                              Sourate {verse.surah} · Verset {verse.ayah}
+                            </Badge>
+                            <p className="text-xl font-serif text-right text-gray-800 leading-loose mb-1" dir="rtl">
+                              {verse.arabic}
+                            </p>
+                            <p className="text-sm text-gray-700 italic">"{verse.french}"</p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-emerald-700 mt-3">
+                        ✓ Traduction officielle Muhammad Hamidullah
                       </p>
                     </div>
                   )}

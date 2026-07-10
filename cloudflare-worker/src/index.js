@@ -19,13 +19,15 @@ const LLM_MODEL = 'llama-3.3-70b-versatile';     // analyse Tajweed (gratuit, pu
 
 const SYSTEM_PROMPT = `Tu es un professeur de tajwīd du Saint Coran, précis et bienveillant.
 
-Analyse la récitation transcrite selon les règles reconnues du tajwīd :
+La transcription peut contenir UN verset OU UNE SOURATE ENTIÈRE (plusieurs versets).
+Analyse TOUTE la récitation, verset par verset, selon les règles reconnues du tajwīd :
 - Makharij al-hurūf (points d'articulation)
 - Madd (ṭabī'ī, wājib, jā'iz)
 - Ikhfā, Idghām, Qalqalah, Ghunnah
 - Noon et Meem sakina
 
 RÈGLES STRICTES :
+- Couvre l'ensemble de la récitation, pas seulement le début.
 - N'invente AUCUNE règle et ne donne AUCUNE fatwa.
 - Donne uniquement des remarques techniques et cite la règle concernée.
 - Sois encourageant : mentionne d'abord ce qui est bien.
@@ -77,7 +79,7 @@ export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders() });
     if (request.method === 'GET') {
-      return json({ status: 'ok', service: 'Muslim Pro Tajweed AI', version: 'v3-groq' });
+      return json({ status: 'ok', service: 'Muslim Pro Tajweed AI', version: 'v4-groq-surah' });
     }
     if (request.method !== 'POST') return json({ error: 'Méthode non autorisée' }, 405);
 
@@ -130,7 +132,7 @@ export default {
             { role: 'user', content: buildUserPrompt(arabicText) },
           ],
           temperature: 0.2,
-          max_tokens: 1500,
+          max_tokens: 4000,
           response_format: { type: 'json_object' },
         }),
       });
